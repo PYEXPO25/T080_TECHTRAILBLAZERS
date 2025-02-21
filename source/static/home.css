@@ -1,0 +1,349 @@
+/* Global Styles */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    background-color: #f0f2f5;
+    font-family: 'Montserrat', sans-serif;
+    min-height: 100vh;
+    position: relative;
+    padding-bottom: 200px; /* Space for footer */
+}
+
+/* Header Styles */
+.header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: linear-gradient(to right, #1a237e, #283593);
+    padding: 15px 30px;
+    color: white;
+    position: fixed;
+    top: 0;
+    width: 100%;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    z-index: 1000;
+    height: 80px;
+}
+
+.header-title {
+    font-family: 'Roboto Slab', serif;
+    font-size: 32px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin: 0 auto;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.menu-btn {
+    font-size: 28px;
+    background: none;
+    border: none;
+    color: white;
+    cursor: pointer;
+    padding: 5px;
+    transition: transform 0.3s ease;
+}
+
+.menu-btn:hover {
+    transform: scale(1.1);
+}
+
+/* Search Bar Styles */
+.search-bar {
+    width: 300px;
+    padding: 12px 20px;
+    border-radius: 25px;
+    border: none;
+    background: rgba(255, 255, 255, 0.9);
+    margin-right: 30px;
+    font-size: 16px;
+    transition: all 0.3s ease;
+}
+
+.search-bar:focus {
+    width: 350px;
+    box-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+    outline: none;
+}
+
+/* Profile Styles */
+.profile-container {
+    position: relative;
+    cursor: pointer;
+}
+
+.profile-pic {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    border: 3px solid #fff;
+    transition: transform 0.3s ease;
+}
+
+.profile-pic:hover {
+    transform: scale(1.1);
+}
+
+.profile-dropdown {
+    position: absolute;
+    top: 70px;
+    right: 10px;
+    background: white;
+    border-radius: 15px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+    width: 300px;
+    padding: 25px;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-10px);
+    transition: all 0.3s ease;
+    z-index: 1001;
+}
+
+.profile-dropdown.show {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+.profile-details {
+    text-align: center;
+    color: #333;
+}
+
+.profile-details img {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    border: 4px solid #1a237e;
+    margin-bottom: 15px;
+}
+
+.officer-name {
+    font-size: 24px;
+    font-weight: 700;
+    color: #1a237e;
+    margin-bottom: 10px;
+}
+
+.officer-details {
+    font-size: 14px;
+    line-height: 1.6;
+    color: #555;
+    margin-bottom: 20px;
+}
+
+/* Sidebar Styles */
+.overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    display: none;
+    z-index: 998;
+}
+
+.overlay.show {
+    display: block;
+}
+
+.sidebar {
+    position: fixed;
+    top: 0;
+    left: -300px;
+    width: 300px;
+    height: 100%;
+    background: white;
+    padding: 30px;
+    transition: left 0.3s ease;
+    z-index: 999;
+    box-shadow: 4px 0 12px rgba(0, 0, 0, 0.2);
+}
+
+.sidebar.show {
+    left: 0;
+}
+
+.close-btn {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    background: none;
+    border: none;
+    font-size: 24px;
+    cursor: pointer;
+    color: #333;
+}
+
+.sidebar-title {
+    font-family: 'Roboto Slab', serif;
+    font-size: 24px;
+    font-weight: 700;
+    color: #1a237e;
+    margin-bottom: 30px;
+    text-align: center;
+}
+
+.sidebar-menu {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.sidebar-btn {
+    display: flex;
+    align-items: center;
+    padding: 15px;
+    background: #1a237e;
+    color: white;
+    border: none;
+    border-radius: 10px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.sidebar-btn:hover {
+    background: #283593;
+    transform: translateX(5px);
+}
+
+.sidebar-btn img {
+    margin-right: 15px;
+}
+
+/* Button Styles */
+.logout-btn {
+    background: #dc3545;
+    color: white;
+    border: none;
+    padding: 12px 25px;
+    border-radius: 25px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    width: 100%;
+}
+
+.logout-btn:hover {
+    background: #c82333;
+    transform: translateY(-2px);
+}
+
+/* Footer Styles */
+.footer {
+    background: linear-gradient(to right, #1a237e, #283593);
+    color: white;
+    padding: 40px 0;
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+}
+
+.footer-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 30px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.footer-left h2 {
+    font-family: 'Roboto Slab', serif;
+    font-size: 28px;
+    margin-bottom: 10px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.footer-left p {
+    font-size: 16px;
+    opacity: 0.9;
+}
+
+.footer-center {
+    display: flex;
+    gap: 30px;
+}
+
+.footer-center a {
+    color: white;
+    text-decoration: none;
+    font-size: 16px;
+    transition: all 0.3s ease;
+}
+
+.footer-center a:hover {
+    color: #90caf9;
+    text-decoration: underline;
+}
+
+.footer-right {
+    display: flex;
+    gap: 20px;
+}
+
+.footer-right img {
+    width: 24px;
+    height: 24px;
+    transition: transform 0.3s ease;
+}
+
+.footer-right img:hover {
+    transform: scale(1.2);
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+    .header-title {
+        font-size: 24px;
+    }
+
+    .search-bar {
+        width: 200px;
+    }
+
+    .search-bar:focus {
+        width: 250px;
+    }
+}
+
+@media (max-width: 768px) {
+    .header {
+        padding: 15px;
+    }
+
+    .footer-container {
+        flex-direction: column;
+        text-align: center;
+        gap: 20px;
+    }
+
+    .search-bar {
+        display: none;
+    }
+}
+
+@media (max-width: 480px) {
+    .header-title {
+        font-size: 20px;
+    }
+
+    .profile-dropdown {
+        width: 280px;
+        right: -70px;
+    }
+
+    .sidebar {
+        width: 250px;
+    }
+}

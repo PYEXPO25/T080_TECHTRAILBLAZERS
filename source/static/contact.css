@@ -1,0 +1,58 @@
+/* Base Styles */
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f4f4f4;
+    margin: 0;
+    padding: 0;
+    text-align: center;
+}
+
+header {
+    background: #1a237e;
+    color: white;
+    padding: 20px;
+}
+
+h1 {
+    margin: 0;
+    font-size: 2rem;
+}
+
+p {
+    margin: 5px 0;
+}
+
+.officer-container {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    padding: 20px;
+}
+
+.officer-card {
+    background: rgb(190, 189, 189);
+    padding: 15px;
+    margin: 10px;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    width: 250px;
+    text-align: center;
+}
+
+.officer-card img {
+    width: 100%;
+    border-radius: 10px;
+}
+
+.officer-card h2 {
+    margin: 10px 0 5px;
+    color: #1a237e;
+}
+
+footer {
+    background: #1a237e;
+    color: white;
+    padding: 10px;
+    margin-top: 20px;
+}
+

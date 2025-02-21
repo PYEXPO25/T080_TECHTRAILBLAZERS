@@ -1,0 +1,104 @@
+/* Importing a professional font */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap');
+
+body {
+    font-family: 'Poppins', sans-serif;
+    background-color: #1a237e;
+    color: #fff;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+
+.container {
+    background: #002855;
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+    text-align: center;
+    width: 400px;
+    transition: transform 0.3s ease-in-out;
+}
+
+.container:hover {
+    transform: scale(1.05);
+}
+
+h1 {
+    font-weight: 600;
+    font-size: 24px;
+    margin-bottom: 10px;
+}
+
+p {
+    font-size: 14px;
+    margin-bottom: 20px;
+    color: #BDBDBD;
+}
+
+.input-box, .upload-box {
+    background: #27293D;
+    padding: 15px;
+    margin: 10px 0;
+    border-radius: 8px;
+    transition: background 0.3s ease-in-out;
+    text-align: left;
+}
+
+.input-box:hover, .upload-box:hover {
+    background: #ffffff;
+}
+
+label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: 400;
+}
+
+input[type="text"],
+input[type="file"] {
+    width: 90%;
+    padding: 10px;
+    background: #444;
+    border: 1px solid #555;
+    border-radius: 6px;
+    color: white;
+    font-size: 14px;
+}
+
+input[type="text"]::placeholder {
+    color: #bbb;
+}
+
+#file-preview {
+    margin-top: 10px;
+}
+
+.preview-img {
+    width: 40%;
+    max-height: 180px;
+    object-fit: cover;
+    border-radius: 6px;
+    margin-top: 10px;
+    box-shadow: 0 4px 8px rgba(255, 255, 255, 0.2);
+}
+
+button {
+    background: #02153f;
+    color: white;
+    border: none;
+    padding: 12px;
+    font-size: 16px;
+    border-radius: 8px;
+    cursor: pointer;
+    width: 100%;
+    margin-top: 15px;
+    transition: background 0.3s ease-in-out;
+}
+
+button:hover {
+    background: #0b2969;
+}

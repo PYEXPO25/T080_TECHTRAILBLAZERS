@@ -10,8 +10,10 @@ embedder = FaceNet()
 mp_face_detection = mp.solutions.face_detection
 face_detector = mp_face_detection.FaceDetection(model_selection=1, min_detection_confidence=0.7)
 
-# Paths
-BASE_PATH = r"E:\Hackathon\source"
+# Get base directory dynamically (current script location)
+BASE_PATH = os.path.dirname(os.path.abspath(__file__))
+
+# Define paths relative to BASE_PATH
 DATASET_PATH = os.path.join(BASE_PATH, "dataset")
 DETECTED_FACES_FOLDER = os.path.join(BASE_PATH, "detected_faces")
 TIME_DATA_FOLDER = os.path.join(BASE_PATH, "time_data")

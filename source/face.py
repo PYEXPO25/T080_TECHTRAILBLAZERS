@@ -11,7 +11,7 @@ mp_face_detection = mp.solutions.face_detection
 face_detector = mp_face_detection.FaceDetection(model_selection=1, min_detection_confidence=0.7)
 
 # Paths
-DATASET_PATH = "dataset"
+DATASET_PATH = "E:\Hackathon\source\dataset"
 SAVE_FOLDER = "detected_faces"
 
 # Create folder if not exists

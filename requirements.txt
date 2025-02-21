@@ -1,0 +1,5 @@
+opencv-python==4.8.1.78
+numpy==1.26.3
+mediapipe==0.10.9
+keras-facenet==0.3.2
+dlib==19.24.2

@@ -10,10 +10,8 @@ embedder = FaceNet()
 mp_face_detection = mp.solutions.face_detection
 face_detector = mp_face_detection.FaceDetection(model_selection=1, min_detection_confidence=0.7)
 
-# Get base directory dynamically (current script location)
-BASE_PATH = os.path.dirname(os.path.abspath(__file__))
-
-# Define paths relative to BASE_PATH
+# Paths
+BASE_PATH = r"E:\Hackathon\source"
 DATASET_PATH = os.path.join(BASE_PATH, "dataset")
 DETECTED_FACES_FOLDER = os.path.join(BASE_PATH, "detected_faces")
 TIME_DATA_FOLDER = os.path.join(BASE_PATH, "time_data")
@@ -98,7 +96,6 @@ def recognize_face(face_embedding):
     return name  # Return "Unknown" only if no match found
 
 
-# Function to save detected face
 # Function to save detected face with full image and bounding box
 def save_detected_face(full_frame, x, y, width, height, name):
     # Draw bounding box around the detected face
@@ -128,7 +125,7 @@ choice = input("Enter 1 or 2: ")
 
 # Choose source based on input
 if choice == "1":
-    cap = cv2.VideoCapture(0)  # Webcam
+    cap = cv2.VideoCapture(1)  # Webcam
 elif choice == "2":
     VIDEO_PATH = input("Enter the path to the video file: ")
     cap = cv2.VideoCapture(VIDEO_PATH)  # MP4 File
@@ -181,3 +178,5 @@ while True:
 
 cap.release()
 cv2.destroyAllWindows()
+
+

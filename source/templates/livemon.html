@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Policing - Criminal Detection</title>
+    <link rel="stylesheet" href={{ url_for('static', filename='livemon.css') }}>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Smart Policing System</h1>
+            <p>Real-time Criminal Detection</p>
+            
+        </header>
+
+        <main>
+            <button class="open-camera-btn" onclick="startCamera()">Open Camera</button>
+            <div class="camera-container">
+                <video id="cameraFeed" autoplay playsinline></video>
+                <canvas id="snapshotCanvas"></canvas>
+            </div>
+            <p id="resultText">Scanning for criminals...</p>
+        </main>
+    </div>
+
+    <script>
+        function startCamera() {
+            const video = document.getElementById('cameraFeed');
+            navigator.mediaDevices.getUserMedia({ video: true })
+                .then(stream => {
+                    video.srcObject = stream;
+                    setInterval(captureFrame, 500); // Send frame to server every 3 sec
+                })
+                .catch(error => console.error("Error accessing camera:", error));
+        }
+
+        function captureFrame() {
+            const video = document.getElementById('cameraFeed');
+            const canvas = document.getElementById('snapshotCanvas');
+            const ctx = canvas.getContext('2d');
+
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+            canvas.toBlob(blob => {
+                let formData = new FormData();
+                formData.append("frame", blob);
+
+                fetch("http://127.0.0.1:5000/detect", {
+                    method: "POST",
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('resultText').innerText = 
+                        data.matched ? `Criminal Detected: ${data.name}` : "No match found";
+                });
+            }, 'image/jpeg');
+        }
+    </script>
+</body>
+</html>

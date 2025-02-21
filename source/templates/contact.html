@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Contact Officers - Smart Policing</title>
-    <link rel="stylesheet" href="contact.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='contact.css') }}">
 </head>
 <body>
     <header>
@@ -15,35 +15,35 @@
     <main>
         <section class="officer-container">
             <div class="officer-card">
-                <img src="./images/mourish.jpg" alt="Officer John Doe">
+                <img src="{{ url_for('static', filename='images/mourish.jpg') }}" alt="Officer Mourish Antony">
                 <h2>Mourish Antony</h2>
                 <p>Lead Digital Investigator</p>
                 <p>Email: johndoe@police.gov</p>
                 <p>Phone: 6381032833</p>
             </div>
             <div class="officer-card">
-                <img src="./images/harini.jpg" alt="Officer Jane Smith">
+                <img src="{{ url_for('static', filename='images/harini.jpg') }}" alt="Officer Harini">
                 <h2>Harini</h2>
                 <p>Cyber Crime Specialist</p>
                 <p>Email: janesmith@police.gov</p>
                 <p>Phone: 8124898798</p>
             </div>
             <div class="officer-card">
-                <img src="./images/vinu.jpg" alt="Officer Robert Brown">
+                <img src="{{ url_for('static', filename='images/vinu.jpg') }}" alt="Officer Vinu Karthick">
                 <h2>Vinu Karthick</h2>
-                <p>Lead Digital Investigator/p>
+                <p>Lead Digital Investigator</p>
                 <p>Email: robertbrown@police.gov</p>
                 <p>Phone: 9597423306</p>
             </div>
             <div class="officer-card">
-                <img src="./images/tejaashri.jpg" alt="Officer Emily White">
+                <img src="{{ url_for('static', filename='images/tejaashri.jpg') }}" alt="Officer Tejaashri">
                 <h2>Tejaashri</h2>
                 <p>Lead Digital Investigator</p>
                 <p>Email: emilywhite@police.gov</p>
                 <p>Phone: 9843643664</p>
             </div>
             <div class="officer-card">
-                <img src="./images/natarajan.jpg" alt="Officer Michael Green">
+                <img src="{{ url_for('static', filename='images/natarajan.jpg') }}" alt="Officer Natarajan">
                 <h2>Natarajan</h2>
                 <p>Lead Digital Investigator</p>
                 <p>Email: michaelgreen@police.gov</p>

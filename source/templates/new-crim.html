@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Policing System</title>
+    <link rel="stylesheet" href="new-crim.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Smart Policing System</h1>
+        <p>Enter the suspect's name and upload an image for AI-based facial recognition.</p>
+
+        <form id="upload-form">
+            <div class="input-box">
+                <label for="suspect-name">Suspect's Name</label>
+                <input type="text" id="suspect-name" placeholder="Enter full name" required>
+            </div>
+
+            <div class="upload-box">
+                <label for="image-upload">Upload Image</label>
+                <input type="file" id="image-upload" accept="image/*" required>
+            </div>
+
+            <div id="file-preview"></div>
+
+            <button type="submit">Analyze Face</button>
+        </form>
+    </div>
+
+    <script>
+        document.getElementById("image-upload").addEventListener("change", function(event) {
+            let filePreview = document.getElementById("file-preview");
+            filePreview.innerHTML = ""; // Clear previous preview
+
+            if (event.target.files.length === 0) {
+                filePreview.innerHTML = "<p>No image selected.</p>";
+                return;
+            }
+
+            let file = event.target.files[0];
+            if (file.type.startsWith("image/")) {
+                let imgPreview = document.createElement("img");
+                imgPreview.src = URL.createObjectURL(file);
+                imgPreview.alt = "Uploaded Image";
+                imgPreview.classList.add("preview-img");
+                filePreview.appendChild(imgPreview);
+            } else {
+                filePreview.innerHTML = "<p style='color: red;'>Invalid file type. Please upload an image.</p>";
+            }
+        });
+
+        document.getElementById("upload-form").addEventListener("submit", function(event) {
+            event.preventDefault();
+            let suspectName = document.getElementById("suspect-name").value.trim();
+            if (!suspectName) {
+                alert("Please enter the suspect's name.");
+                return;
+            }
+            alert(`AI Facial Recognition for ${suspectName} in progress...`);
+        });
+    </script>
+</body>
+</html>

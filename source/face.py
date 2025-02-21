@@ -125,7 +125,7 @@ choice = input("Enter 1 or 2: ")
 
 # Choose source based on input
 if choice == "1":
-    cap = cv2.VideoCapture(1)  # Webcam
+    cap = cv2.VideoCapture(0)  # Webcam
 elif choice == "2":
     VIDEO_PATH = input("Enter the path to the video file: ")
     cap = cv2.VideoCapture(VIDEO_PATH)  # MP4 File

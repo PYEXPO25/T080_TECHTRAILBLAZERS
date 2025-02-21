@@ -8,7 +8,11 @@ from keras_facenet import FaceNet
 from ultralytics import YOLO
 
 # Load YOLOv8 Model
-yolo_model = YOLO(r"E:\Hackathon\source\model\best.pt")
+
+BASE_PATH = os.path.dirname(os.path.abspath(__file__))  # Get current script directory
+MODEL_PATH = os.path.join(BASE_PATH, "model", "best.pt")  # Construct relative path
+
+yolo_model = YOLO(MODEL_PATH)  # Load YOLO model
 
 # Load Face Recognition Model
 embedder = FaceNet()
@@ -109,7 +113,7 @@ known_faces = create_embeddings()
 print(f"Loaded embeddings for: {list(known_faces.keys())}")
 
 # Open Webcam
-cap = cv2.VideoCapture(1)
+cap = cv2.VideoCapture(0)
 
 while True:
     ret, frame = cap.read()

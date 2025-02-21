@@ -11,11 +11,14 @@ mp_face_detection = mp.solutions.face_detection
 face_detector = mp_face_detection.FaceDetection(model_selection=1, min_detection_confidence=0.7)
 
 # Paths
-DATASET_PATH = "dataset"
-SAVE_FOLDER = "detected_faces"
+BASE_PATH = r"E:\Hackathon\source"
+DATASET_PATH = os.path.join(BASE_PATH, "dataset")
+DETECTED_FACES_FOLDER = os.path.join(BASE_PATH, "detected_faces")
+TIME_DATA_FOLDER = os.path.join(BASE_PATH, "time_data")
 
-# Create folder if not exists
-os.makedirs(SAVE_FOLDER, exist_ok=True)
+# Create folders if they do not exist
+os.makedirs(DETECTED_FACES_FOLDER, exist_ok=True)
+os.makedirs(TIME_DATA_FOLDER, exist_ok=True)
 
 # Function to extract face from image using MediaPipe
 def extract_face(img):
@@ -96,12 +99,6 @@ def recognize_face(face_embedding):
 # Function to save detected face
 # Function to save detected face with full image and bounding box
 def save_detected_face(full_frame, x, y, width, height, name):
-    # Create folders if they do not exist
-    detected_faces_folder = "detected_faces"
-    time_data_folder = "time_data"
-    os.makedirs(detected_faces_folder, exist_ok=True)
-    os.makedirs(time_data_folder, exist_ok=True)
-
     # Draw bounding box around the detected face
     cv2.rectangle(full_frame, (x, y), (x + width, y + height), (0, 255, 0), 2)
     cv2.putText(full_frame, name, (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 255, 0), 2)
@@ -109,16 +106,17 @@ def save_detected_face(full_frame, x, y, width, height, name):
     # Generate timestamp
     timestamp = datetime.datetime.now().strftime("%d-%m-%Y_%H-%M-%S")
 
-    # Save the full image with bounding box
-    image_filename = f"{detected_faces_folder}/{name}_{timestamp}.jpg"
+    # Save the full image with bounding box inside detected_faces folder
+    image_filename = os.path.join(DETECTED_FACES_FOLDER, f"{name}_{timestamp}.jpg")
     cv2.imwrite(image_filename, full_frame)
     print(f"[INFO] Saved Full Image: {image_filename}")
 
-    # Save the timestamp in a text file
-    time_filename = f"{time_data_folder}/{name}.txt"
+    # Save the timestamp in a text file inside time_data folder
+    time_filename = os.path.join(TIME_DATA_FOLDER, f"{name}.txt")
     with open(time_filename, "a") as file:  # Append mode
         file.write(f"{timestamp}\n")
     print(f"[INFO] Logged Time for {name}: {timestamp}")
+
 
 # Ask user for input choice
 print("Choose an option:")

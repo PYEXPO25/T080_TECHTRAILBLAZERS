@@ -96,7 +96,6 @@ def recognize_face(face_embedding):
     return name  # Return "Unknown" only if no match found
 
 
-# Function to save detected face
 # Function to save detected face with full image and bounding box
 def save_detected_face(full_frame, x, y, width, height, name):
     # Draw bounding box around the detected face
@@ -126,7 +125,7 @@ choice = input("Enter 1 or 2: ")
 
 # Choose source based on input
 if choice == "1":
-    cap = cv2.VideoCapture(0)  # Webcam
+    cap = cv2.VideoCapture(1)  # Webcam
 elif choice == "2":
     VIDEO_PATH = input("Enter the path to the video file: ")
     cap = cv2.VideoCapture(VIDEO_PATH)  # MP4 File

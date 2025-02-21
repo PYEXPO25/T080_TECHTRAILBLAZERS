@@ -3,6 +3,11 @@ import dlib
 import os
 
 def extract_faces_from_video(name, video_path, num_images=100):
+    # Ensure the path is valid
+    if not os.path.exists(video_path):
+        print("❌ Error: Video file does not exist.")
+        return
+
     # Load dlib's face detector
     detector = dlib.get_frontal_face_detector()
 
@@ -10,23 +15,23 @@ def extract_faces_from_video(name, video_path, num_images=100):
     cap = cv2.VideoCapture(video_path)
 
     if not cap.isOpened():
-        print("❌ Error: Unable to open video file.")
+        print("❌ Error: Unable to open video file. Check file path and format.")
         return
 
     # Get total frame count
     total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
 
-    # Define step size to extract exactly 100 images
+    # Define step size to extract exactly `num_images` images
     step = max(1, total_frames // num_images)
 
     # Create dataset directory
-    output_dir = f"dataset/{name}"
+    output_dir = os.path.join("source//dataset", name)
     os.makedirs(output_dir, exist_ok=True)
 
     frame_count = 0
     saved_images = 0
 
-    while saved_images < num_images:  # Stop after saving 100 images
+    while saved_images < num_images:
         ret, frame = cap.read()
         if not ret:
             break  # Stop if video ends
@@ -62,10 +67,10 @@ def extract_faces_from_video(name, video_path, num_images=100):
         # Crop the expanded face
         cropped_face = frame[y:y+h, x:x+w]
 
-        # Resize to 200x200 (better resolution for face recognition)
+        # Resize to 200x200
         clear_face = cv2.resize(cropped_face, (200, 200))
 
-        # Apply contrast enhancement (helps with face clarity)
+        # Apply contrast enhancement
         clear_face = cv2.convertScaleAbs(clear_face, alpha=1.2, beta=30)
 
         # Save the cropped face
@@ -75,11 +80,11 @@ def extract_faces_from_video(name, video_path, num_images=100):
         saved_images += 1
 
     cap.release()
-    print(f"✅ Extracted exactly {num_images} **clear** face images from video. Saved in: {output_dir}")
+    print(f"✅ Extracted {num_images} face images from video. Saved in: {output_dir}")
 
 # Get user input
 name = input("Enter the name of the person in the video: ")
-video_path = input("Enter the path of the video: ")
+video_path = input("Enter the path of the video: ").strip('\"')  # Remove quotes if pasted
 
 # Call function
 extract_faces_from_video(name, video_path)

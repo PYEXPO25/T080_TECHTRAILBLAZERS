@@ -4,29 +4,37 @@
 
 ## Problem Statement
 
-*Problem Statement ID – PY036*
+Problem Statement ID – PY036
 
-Formulate your problem statement clearly and concisely.
-
+An intent to expediate the investigation for any crime scene or to take preventive action to neutralize an intended antisocial activity (information received through intel), we wish to implement an extended application of Facial Recognition System(FRS).Real Time validation of individuals with crime history,Movement Tracking of Suspects,Identification of People loitering in Unauthorized area,Smart Police Deployment.  
 ---
 
 ## Overview
-
-Provide an overview of the project, its purpose, and what it aims to achieve along with proposed solution
+OVERVIEW:
+Our Smart Policing System utilizes facial recognition and AI by :
+Ø Implementing Real-Time Identification of a suspect
+Ø Reducing Human Errors
+Ø Lowering time consumption
+Ø Improving Crime Prevention
+Smart Policing System is designed to serve a wide range of
+clients including national security, law enforcement, border
+patrol, and immigration checks, etc…
+SOLUTION:
+This system automates decision making using facial recognition.It enhances the efficiency of agencies by enabling real-time facial recognition of suspects.By combining facial recognition and Intelligent Surveillance, we can predict criminals by monitoring their presence in an area.
 
 ---
 
 ## Team Members
 
-*Team ID – xxxxx*
-
+Team ID – T080
+ 
 List your team members along with their roles.
 
-- *Mourish Antony C* - Team Leader
-- *Harini M* - Role
-- *Natarajan V* - Role
-- *Tejaashri K* - Role
-- *Vinu Karthick D* - Role
+- Mourish Antony C - Backend
+- Harini M - Frontend 
+- Natarajan V - Backend 
+- Tejaashri K - Frontend 
+- Vinu Karthick D - Frontend
 
 ![Team Photo](media/team-photo.png)
 
@@ -36,10 +44,10 @@ List your team members along with their roles.
 
 List the technologies and tools used in the project. For example:
 
-- *Frontend:* HTML, CSS, JavaScript, ReactJS
-- *Backend:* Flask, Django
-- *Database:* MongoDB, MySQL
-- *Other Tools:* Docker, Git, TensorFlow
+- Frontend: HTML, CSS, JavaScript,
+- Backend: Flask
+- Database: MySQL
+- Other Tools:  Git,TensorFlow,open CV,mediapip
 
 ---
 
@@ -103,15 +111,15 @@ Follow these steps to clone and run the application locally.
 
 Images to demonstrate the user interface:
 
-*Example pages:*
+Example pages:
 
-1. *Landing Page:*
+1. Landing Page:
    ![Landing Page Mockup](media/LoadingPage.png)
 
-2. *Dashboard:*
+2. Dashboard:
    ![Dashboard Mockup](media/DashBoard.png)
 
-3. *Analytics View:*
+3. Analytics View:
    ![Analytics Mockup](media/Analytics.png)
 
 ---

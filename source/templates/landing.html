@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SmartPolice AI - Next Generation Law Enforcement</title>
-    <link rel="stylesheet" href="landing.css">
+    <link rel="stylesheet" href={{ url_for('static', filename='landing.css') }}>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.css" rel="stylesheet">
 </head>
@@ -13,13 +13,15 @@
         <nav class="glass-nav">
             <div class="logo">
                 <i class="fas fa-shield-alt"></i>
-                SmartPolice AI
+                Smart Policing System
             </div>
             <ul>
-                <li><a href="landing.html">Home</a></li>
-                <li><a href="live-mon.html">Live Monitering</a></li>
-                <li><a href="new-crim.css">Insert-data</a></li>
-                <li><a href="contact.html">Contact</a></li>
+
+                <li><a href='/landing'>Home</a></li>
+                <li><a href='/live-mon'>Live Monitering</a></li>
+                <li><a href='/new-crim'>Insert-video</a></li>
+                <li><a href='/contact'>Contact</a></li>
+
             </ul>
         </nav>
     </header>
@@ -27,7 +29,7 @@
     <main>
         <section id="hero" class="parallax">
             <div class="hero-content" data-aos="fade-up">
-                <h1>SMART POLICING AI</h1>
+                <h1>SMART POLICING SYSTEM</h1>
                 <p class="subtitle">Next Generation Law Enforcement Technology<br> Using AI and Facial recognition. </p>
 
             </div>

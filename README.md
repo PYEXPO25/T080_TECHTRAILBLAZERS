@@ -130,9 +130,9 @@ Example pages:
 [Click here to view the PPT](insert-drive-link-here)
 
 ### 🎥 Project Video
-[Click here to view the project demo video](insert-drive-link-here)
+[Click here to view the project demo video]((https://drive.google.com/file/d/1OV7FsdaieAxUQG7ytJESqcyVHYsfpPW9/view?usp=drive_link))
 
 ### 📹 YouTube Link
-[Watch the project on YouTube](insert-youtube-link-here)
+[Watch the project on YouTube]((https://drive.google.com/file/d/1OV7FsdaieAxUQG7ytJESqcyVHYsfpPW9/view?usp=drive_link))
 
 ---

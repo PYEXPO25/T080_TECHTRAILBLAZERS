@@ -5,15 +5,9 @@ import datetime
 import numpy as np
 import mediapipe as mp
 from keras_facenet import FaceNet
-from ultralytics import YOLO
 import pickle
 
 app = Flask(__name__)
-
-# Load YOLO Model for Weapon Detection
-BASE_PATH = os.path.dirname(os.path.abspath(__file__))
-MODEL_PATH = os.path.join(BASE_PATH, "model", "best.pt")
-yolo_model = YOLO(MODEL_PATH)
 
 # Load Face Recognition Model
 embedder = FaceNet()
@@ -21,23 +15,17 @@ mp_face_detection = mp.solutions.face_detection
 face_detector = mp_face_detection.FaceDetection(model_selection=1, min_detection_confidence=0.7)
 
 # Directories
+BASE_PATH = os.path.dirname(os.path.abspath(__file__))
 DETECTED_FACES_FOLDER = os.path.join(BASE_PATH, "detected_faces")
 TIME_DATA_FOLDER = os.path.join(BASE_PATH, "time_data")
-WEAPON_FOLDER = os.path.join(BASE_PATH, "detected_weapons")
-WEAPON_TIME_LOG = os.path.join(BASE_PATH, "weapon_time_data", "weapon_log.txt")
 EMBEDDINGS_FILE = os.path.join(BASE_PATH, "embeddings.pkl")
 
 os.makedirs(DETECTED_FACES_FOLDER, exist_ok=True)
 os.makedirs(TIME_DATA_FOLDER, exist_ok=True)
-os.makedirs(WEAPON_FOLDER, exist_ok=True)
-os.makedirs(os.path.dirname(WEAPON_TIME_LOG), exist_ok=True)
 
 # Load known faces embeddings
 with open(EMBEDDINGS_FILE, "rb") as f:
     known_faces = pickle.load(f)
-
-# Class Labels
-CLASS_LABELS = {0: "Person", 1: "Weapon"}
 
 # Function to extract faces
 def extract_face(img):
@@ -77,28 +65,6 @@ def generate_frames():
         if not success:
             break
         frame = cv2.flip(frame, 1)
-
-        # Weapon Detection
-        results = yolo_model(frame)
-        for result in results:
-            for box in result.boxes:
-                x1, y1, x2, y2 = map(int, box.xyxy[0])
-                class_id = int(box.cls[0])
-                confidence = float(box.conf[0])
-                label = CLASS_LABELS.get(class_id, "Unknown")  
-                color = (0, 255, 0) if label == "Person" else (0, 0, 255)
-
-                cv2.rectangle(frame, (x1, y1), (x2, y2), color, 2)
-                cv2.putText(frame, f"{label} ({confidence:.2f})", (x1, y1 - 10), 
-                            cv2.FONT_HERSHEY_SIMPLEX, 0.8, color, 2)
-
-                if label == "Weapon":
-                    timestamp = datetime.datetime.now().strftime("%d-%m-%Y_%H-%M-%S")
-                    weapon_filename = os.path.join(WEAPON_FOLDER, f"weapon_{timestamp}.jpg")
-                    weapon_crop = frame[y1:y2, x1:x2]
-                    cv2.imwrite(weapon_filename, weapon_crop)
-                    with open(WEAPON_TIME_LOG, "a") as file:
-                        file.write(f"{timestamp}\n")
 
         # Face Recognition
         faces = extract_face(frame)

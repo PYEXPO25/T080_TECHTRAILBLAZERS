@@ -12,10 +12,15 @@ An intent to expediate the investigation for any crime scene or to take preventi
 ## Overview
 OVERVIEW:
 Our Smart Policing System utilizes facial recognition and AI by :
+
 Ø Implementing Real-Time Identification of a suspect
+
 Ø Reducing Human Errors
+
 Ø Lowering time consumption
+
 Ø Improving Crime Prevention
+
 Smart Policing System is designed to serve a wide range of
 clients including national security, law enforcement, border
 patrol, and immigration checks, etc…

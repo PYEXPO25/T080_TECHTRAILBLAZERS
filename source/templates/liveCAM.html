@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Policing Surveillance System</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Arial', sans-serif;
+        }
+
+        body {
+            min-height: 100vh;
+            background: #f0f2f5;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            color: #1a2942;
+        }
+
+        .top-bar {
+            width: 100%;
+            background: #1a2942;
+            color: white;
+            padding: 0.5rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .department-info {
+            font-size: 0.9rem;
+        }
+
+        .header {
+            text-align: center;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            width: 100%;
+            background: white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .title {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+            color: #1a2942;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 1rem;
+        }
+
+        .badge {
+            width: 40px;
+            height: 40px;
+            background: #1a2942;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #ffd700;
+        }
+
+        .subtitle {
+            font-size: 1rem;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .camera-container {
+            width: 90%;
+            max-width: 800px;
+            aspect-ratio: 16/9;
+            background: #000;
+            border: 2px solid #1a2942;
+            border-radius: 5px;
+            overflow: hidden;
+            position: relative;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+
+        #videoElement {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transform: scaleX(-1);
+            display: none;
+        }
+
+        .placeholder {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            color: #fff;
+            background: rgba(26, 41, 66, 0.9);
+            padding: 1rem 2rem;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+
+        .controls {
+            margin-top: 2rem;
+            display: flex;
+            gap: 1rem;
+        }
+
+        .btn {
+            padding: 1rem 2rem;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .start-btn {
+            background: #28a745;
+            color: white;
+        }
+
+        .stop-btn {
+            background: #dc3545;
+            color: white;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .timestamp {
+            position: absolute;
+            bottom: 1rem;
+            right: 1rem;
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 0.5rem;
+            border-radius: 3px;
+            font-family: monospace;
+            font-size: 0.9rem;
+        }
+
+        .recording-indicator {
+            position: absolute;
+            top: 1rem;
+            left: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 0.5rem;
+            border-radius: 3px;
+            display: none;
+        }
+
+        .recording-dot {
+            width: 10px;
+            height: 10px;
+            background: #dc3545;
+            border-radius: 50%;
+            animation: blink 1s infinite;
+        }
+
+        @keyframes blink {
+            0% { opacity: 1; }
+            50% { opacity: 0.4; }
+            100% { opacity: 1; }
+        }
+
+        @media (max-width: 768px) {
+            .camera-container {
+                width: 95%;
+            }
+            
+            .controls {
+                flex-direction: column;
+            }
+            
+            .btn {
+                width: 100%;
+                justify-content: center;
+            }
+
+            .title {
+                font-size: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="top-bar">
+        <div class="department-info">CONFIDENTIAL • OFFICIAL USE ONLY</div>
+        <div class="department-info">Dept. ID: PD-2025-0234</div>
+    </div>
+
+    <div class="header">
+        <h1 class="title">
+            <div class="badge">PD</div>
+            Smart Policing Surveillance System
+        </h1>
+        <p class="subtitle">Official Video Monitoring Interface</p>
+    </div>
+
+    <div class="camera-container">
+        <video id="videoElement" autoplay playsinline></video>
+        <div class="placeholder">
+            SURVEILLANCE CAMERA OFFLINE
+        </div>
+        <div class="timestamp" id="timestamp"></div>
+        <div class="recording-indicator">
+            <div class="recording-dot"></div>
+            REC
+        </div>
+    </div>
+
+    <div class="controls">
+        <button class="btn start-btn" onclick="startCamera()">
+            Initiate Surveillance
+        </button>
+        <button class="btn stop-btn" onclick="stopCamera()">
+            Terminate Feed
+        </button>
+    </div>
+
+    <script>
+        const video = document.getElementById('videoElement');
+        const placeholder = document.querySelector('.placeholder');
+        const timestamp = document.getElementById('timestamp');
+        const recordingIndicator = document.querySelector('.recording-indicator');
+        let stream = null;
+
+        function updateTimestamp() {
+            const now = new Date();
+            timestamp.textContent = now.toLocaleString('en-US', {
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit',
+                hour12: false
+            });
+        }
+
+        async function startCamera() {
+            try {
+                stream = await navigator.mediaDevices.getUserMedia({ video: true });
+                video.srcObject = stream;
+                video.style.display = 'block';
+                placeholder.style.display = 'none';
+                recordingIndicator.style.display = 'flex';
+                setInterval(updateTimestamp, 1000);
+            } catch (err) {
+                console.error("Error accessing camera:", err);
+                alert("Camera access denied. Please check your permissions and try again.");
+            }
+        }
+
+        function stopCamera() {
+            if (stream) {
+                stream.getTracks().forEach(track => track.stop());
+                video.srcObject = null;
+                video.style.display = 'none';
+                placeholder.style.display = 'block';
+                recordingIndicator.style.display = 'none';
+            }
+        }
+    </script>
+</body>
+</html>

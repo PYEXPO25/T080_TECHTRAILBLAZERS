@@ -35,11 +35,11 @@ Team ID – T080
  
 List your team members along with their roles.
 
-- Mourish Antony C - Backend
-- Harini M - Frontend 
-- Natarajan V - Backend 
-- Tejaashri K - Frontend 
-- Vinu Karthick D - Frontend
+- Mourish Antony C - AI&ML Model Developer
+- Harini M - Frontend Developer
+- Natarajan V - Backend Developer
+- Tejaashri K - Frontend Developer
+- Vinu Karthick D - Frontend Developer
 
 ![Team Photo](media/team-photo.png)
 

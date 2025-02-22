@@ -5,7 +5,7 @@ import os
 def extract_faces_from_video(name, video_path, num_images=100):
     # Ensure the path is valid
     if not os.path.exists(video_path):
-        print("❌ Error: Video file does not exist.")
+        print("Error: Video file does not exist.")
         return
 
     # Load dlib's face detector
@@ -15,7 +15,7 @@ def extract_faces_from_video(name, video_path, num_images=100):
     cap = cv2.VideoCapture(video_path)
 
     if not cap.isOpened():
-        print("❌ Error: Unable to open video file. Check file path and format.")
+        print("Error: Unable to open video file. Check file path and format.")
         return
 
     # Get total frame count
@@ -80,7 +80,7 @@ def extract_faces_from_video(name, video_path, num_images=100):
         saved_images += 1
 
     cap.release()
-    print(f"✅ Extracted {num_images} face images from video. Saved in: {output_dir}")
+    print(f"Extracted {num_images} face images from video. Saved in: {output_dir}")
 
 # Get user input
 name = input("Enter the name of the person in the video: ")

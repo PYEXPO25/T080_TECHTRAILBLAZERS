@@ -1,5 +1,11 @@
+Flask==2.2.5
 opencv-python==4.8.1.78
-numpy==1.26.3
+numpy==1.24.3
 mediapipe==0.10.9
 keras-facenet==0.3.2
-dlib==19.24.2
+ultralytics==8.1.26
+torch==2.0.1
+torchvision==0.15.2
+tensorflow==2.13.0
+pillow==10.1.0
+pickle-mixin==1.0.2

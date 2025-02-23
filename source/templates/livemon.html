@@ -134,6 +134,23 @@
             100% { opacity: 1; }
         }
 
+        .back-button {
+            margin-top: 1.5rem;
+            padding: 10px 20px;
+            font-size: 16px;
+            color: white;
+            background-color: #1a2942;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            text-decoration: none;
+            transition: background 0.3s;
+        }
+
+        .back-button:hover {
+            background-color: #324a77;
+        }
+
         @media (max-width: 768px) {
             .camera-container {
                 width: 95%;
@@ -167,6 +184,8 @@
             REC
         </div>
     </div>
+
+    <button onclick="window.location.href='/landing'" class="back-button">⬅ Back to Home</button>
 
     <script>
         function updateTimestamp() {

@@ -11,8 +11,10 @@
         <h1>Contact Our Officers</h1>
         <p>Reach out to our dedicated team for any assistance.</p>
     </header>
-    
+
     <main>
+        <button onclick="window.location.href='/landing'" class="back-button">⬅ Back to Home</button>
+
         <section class="officer-container">
             <div class="officer-card">
                 <img src="{{ url_for('static', filename='images/mourish.jpg') }}" alt="Officer Mourish Antony">
@@ -51,9 +53,28 @@
             </div>
         </section>
     </main>
-    
+
     <footer>
         <p>&copy; 2025 Smart Policing. All Rights Reserved.</p>
     </footer>
+
+    <style>
+        .back-button {
+            display: inline-block;
+            margin: 15px;
+            padding: 10px 20px;
+            font-size: 16px;
+            color: white;
+            background-color: #333;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            text-decoration: none;
+        }
+
+        .back-button:hover {
+            background-color: #555;
+        }
+    </style>
 </body>
 </html>

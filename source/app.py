@@ -128,7 +128,7 @@ def video_feed():
 def contact():
     return render_template('contact.html')
 
-@app.route('/newcrim')
+@app.route('/new-crim')
 def newcrim():
     return render_template('newcrim.html')
 

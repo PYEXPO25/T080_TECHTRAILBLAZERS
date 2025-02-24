@@ -74,7 +74,7 @@ def extract_faces_from_video(name, video_path, num_images=100):
         clear_face = cv2.convertScaleAbs(clear_face, alpha=1.2, beta=30)
 
         # Save the cropped face
-        image_path = os.path.join(output_dir, f"face_{saved_images}.jpg")
+        +        image_path = os.path.join(output_dir, f"face_{saved_images}.jpg")
         cv2.imwrite(image_path, clear_face)
 
         saved_images += 1

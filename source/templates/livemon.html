@@ -134,6 +134,22 @@
             100% { opacity: 1; }
         }
 
+        .alert-box {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 60%;
+            background-color: red;
+            color: white;
+            padding: 15px;
+            font-size: 18px;
+            font-weight: bold;
+            text-align: center;
+            display: none;
+            border-radius: 10px;
+        }
+
         .back-button {
             margin-top: 1.5rem;
             padding: 10px 20px;
@@ -185,6 +201,12 @@
         </div>
     </div>
 
+    <div id="alert-box" class="alert-box"></div>
+
+    <audio id="alert-sound">
+        <source src="{{ url_for('static', filename='alert.mp3') }}" type="audio/mp3">
+    </audio>
+
     <button onclick="window.location.href='/landing'" class="back-button">⬅ Back to Home</button>
 
     <script>
@@ -201,6 +223,29 @@
             });
         }
         setInterval(updateTimestamp, 1000);
+
+        function fetchAlerts() {
+            fetch('/get_alerts')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.length > 0) {
+                        let latestAlert = data[data.length - 1];
+                        document.getElementById("alert-box").innerText = 
+                            `ALERT! Suspect: ${latestAlert.name} Detected at ${latestAlert.time}`;
+                        document.getElementById("alert-box").style.display = "block";
+
+                        let alertSound = document.getElementById("alert-sound");
+                        alertSound.play();
+
+                        setTimeout(() => {
+                            document.getElementById("alert-box").style.display = "none";
+                        }, 5000);
+                    }
+                });
+        }
+
+        setInterval(fetchAlerts, 3000);
     </script>
+
 </body>
 </html>

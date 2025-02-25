@@ -1,4 +1,4 @@
-from flask import Flask, render_template, Response, request, redirect, url_for, flash
+from flask import Flask, render_template, Response, request, redirect, url_for, flash, jsonify
 import cv2
 import os
 import numpy as np
@@ -63,10 +63,13 @@ def recognize_face(face_embedding):
                 name = person
     return name
 
-# Video Streaming Generator
+# Store alerts globally
+alerts = []
+
 def generate_frames():
+    global alerts
     cap = cv2.VideoCapture(0)
-    
+
     if not cap.isOpened():
         return
 
@@ -87,12 +90,15 @@ def generate_frames():
             cv2.rectangle(frame, (x, y), (x + width, y + height), (0, 255, 0), 2)
             cv2.putText(frame, name, (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 255, 0), 2)
 
-            # Save detected faces
+            # Save detected faces & trigger alert
             if name != "Unknown":
-                timestamp = datetime.now().strftime("%Y%m%d-%H%M%S")
+                timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
                 face_filename = f"{name}_{timestamp}.jpg"
                 face_path = os.path.join(DETECTED_FACES_FOLDER, face_filename)
                 cv2.imwrite(face_path, cv2.cvtColor(face, cv2.COLOR_RGB2BGR))
+
+                # Store alert message
+                alerts.append({"name": name, "time": timestamp})
 
         # Encode Frame for Streaming
         ret, buffer = cv2.imencode('.jpg', frame)
@@ -103,6 +109,13 @@ def generate_frames():
 
     cap.release()
     cv2.destroyAllWindows()
+
+# API to send alerts to frontend
+@app.route('/get_alerts')
+def get_alerts():
+    global alerts
+    return jsonify(alerts)
+
 
 # Function to extract faces from video and store embeddings
 def extract_faces_from_video(name, video_path, num_images=100):

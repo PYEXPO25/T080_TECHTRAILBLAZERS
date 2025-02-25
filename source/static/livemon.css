@@ -1,7 +1,7 @@
 body {
     font-family: Arial, sans-serif;
-    background: linear-gradient(135deg, #0a0a0a, #1b3b6f);
-    color: #fff;
+    background: linear-gradient(135deg, #0a0a0a, #fafafa);
+    color: #1b1b58;
     text-align: center;
     margin: 0;
     padding: 0;
@@ -16,9 +16,9 @@ body {
 }
 
 .open-camera-btn {
-    background-color: #004080;
+    background-color: white;
     border: none;
-    color: white;
+    color: #004080;
     padding: 12px 24px;
     font-size: 18px;
     font-weight: bold;

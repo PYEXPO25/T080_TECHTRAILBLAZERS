@@ -7,9 +7,15 @@ from keras_facenet import FaceNet
 import pickle
 from datetime import datetime
 import time
+from pymongo import MongoClient
 
 app = Flask(__name__)
 app.secret_key = "your_secret_key"
+
+# Connect to MongoDB
+client = MongoClient("mongodb://localhost:27017/")
+db = client["face_recognition"]
+collection = db["suspects"]
 
 # Load Face Recognition Model
 embedder = FaceNet()
@@ -33,7 +39,6 @@ os.makedirs(DATASET_FOLDER, exist_ok=True)
 with open(EMBEDDINGS_FILE, "rb") as f:
     known_faces = pickle.load(f)
 
-# Function to extract faces
 def extract_face(img):
     img_rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
     results = face_detector.process(img_rgb)
@@ -50,7 +55,6 @@ def extract_face(img):
                 faces.append((face, (x, y, width, height)))
     return faces
 
-# Function to recognize faces
 def recognize_face(face_embedding):
     face_embedding = face_embedding / np.linalg.norm(face_embedding)
     min_dist = float("inf")
@@ -64,79 +68,10 @@ def recognize_face(face_embedding):
                 name = person
     return name
 
-# Store alerts globally
 alerts = []
 last_detection_time = {}
 
-def generate_frames():
-    global alerts, last_detection_time
-    cap = cv2.VideoCapture(0)
-
-    if not cap.isOpened():
-        return
-
-    while True:
-        success, frame = cap.read()
-        if not success:
-            break
-        frame = cv2.flip(frame, 1)
-
-        # Face Recognition
-        faces = extract_face(frame)
-        for face, (x, y, width, height) in faces:
-            face_resized = cv2.resize(face, (160, 160))
-            face_embedding = embedder.embeddings([face_resized])[0]
-            name = recognize_face(face_embedding)
-
-            # Draw rectangle and name on the frame
-            cv2.rectangle(frame, (x, y), (x + width, y + height), (0, 255, 0), 2)
-            cv2.putText(frame, name, (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 255, 0), 2)
-
-            # Get the current time
-            current_time = time.time()
-            
-            # Check if 10 seconds have passed since the last detection of this person
-            if name != "Unknown" and (name not in last_detection_time or current_time - last_detection_time[name] >= 10):
-                last_detection_time[name] = current_time  # Update last detection time
-
-                # Save detected face
-                person_folder = os.path.join(DETECTED_FACES_FOLDER, name)
-                os.makedirs(person_folder, exist_ok=True)
-
-                timestamp = datetime.now().strftime("%d-%m-%Y %H-%M-%S")
-                face_count = len(os.listdir(person_folder))
-                face_filename = f"img_{face_count + 1}.jpg"
-                face_path = os.path.join(person_folder, face_filename)
-
-                cv2.imwrite(face_path, cv2.cvtColor(face, cv2.COLOR_RGB2BGR))
-
-                # Save detected time
-                time_data_path = os.path.join(TIME_DATA_FOLDER, f"{name}.txt")
-                with open(time_data_path, "a") as f:
-                    f.write(f"{timestamp}\n")
-
-                # Store alert message
-                alerts.append({"name": name, "time": timestamp})
-
-        # Encode Frame for Streaming
-        ret, buffer = cv2.imencode('.jpg', frame)
-        frame = buffer.tobytes()
-
-        yield (b'--frame\r\n'
-               b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')
-
-    cap.release()
-    cv2.destroyAllWindows()
-
-# API to send alerts to frontend
-@app.route('/get_alerts')
-def get_alerts():
-    global alerts
-    return jsonify(alerts)
-
-
-# Function to extract faces from video and store embeddings
-def extract_faces_from_video(name, video_path, num_images=100):
+def extract_faces_from_video(name, video_path, num_images=50):
     if not os.path.exists(video_path):
         return "Error: Video file does not exist."
 
@@ -197,6 +132,79 @@ def extract_faces_from_video(name, video_path, num_images=100):
     
     return "No faces detected in the video."
 
+
+def generate_frames():
+    global alerts, last_detection_time
+    cap = cv2.VideoCapture(0)
+
+    if not cap.isOpened():
+        return
+
+    while True:
+        success, frame = cap.read()
+        if not success:
+            break
+        frame = cv2.flip(frame, 1)
+
+        faces = extract_face(frame)
+        for face, (x, y, width, height) in faces:
+            face_resized = cv2.resize(face, (160, 160))
+            face_embedding = embedder.embeddings([face_resized])[0]
+            name = recognize_face(face_embedding)
+
+            cv2.rectangle(frame, (x, y), (x + width, y + height), (0, 255, 0), 2)
+            cv2.putText(frame, name, (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 255, 0), 2)
+
+            current_time = time.time()
+            
+            if name != "Unknown" and (name not in last_detection_time or current_time - last_detection_time[name] >= 10):
+                last_detection_time[name] = current_time  
+
+                person_folder = os.path.join(DETECTED_FACES_FOLDER, name)
+                os.makedirs(person_folder, exist_ok=True)
+
+                timestamp = datetime.now().strftime("%d-%m-%Y %H-%M-%S")
+                face_count = len(os.listdir(person_folder))
+                face_filename = f"img_{face_count + 1}.jpg"
+                face_path = os.path.join(person_folder, face_filename)
+
+                cv2.imwrite(face_path, cv2.cvtColor(face, cv2.COLOR_RGB2BGR))
+
+                time_data_path = os.path.join(TIME_DATA_FOLDER, f"{name}.txt")
+                with open(time_data_path, "a") as f:
+                    f.write(f"{timestamp}\n")
+
+                alerts.append({"name": name, "time": timestamp})
+
+                # Store in MongoDB
+                with open(face_path, "rb") as img_file:
+                    image_data = img_file.read()
+
+                suspect_data = {
+                    "suspect_name": name,
+                    "detected_image": image_data,
+                    "time": timestamp
+                }
+                collection.insert_one(suspect_data)
+
+        ret, buffer = cv2.imencode('.jpg', frame)
+        frame = buffer.tobytes()
+
+        yield (b'--frame\r\n'
+               b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')
+
+    cap.release()
+    cv2.destroyAllWindows()
+
+@app.route('/get_alerts')
+def get_alerts():
+    global alerts
+    return jsonify(alerts)
+
+@app.route('/suspects')
+def get_suspects():
+    suspects = list(collection.find({}, {"_id": 0, "suspect_name": 1, "time": 1}))
+    return jsonify(suspects)
 
 @app.route('/')
 def login():

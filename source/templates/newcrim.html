@@ -4,60 +4,68 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Smart Policing System</title>
-    <link rel="stylesheet" href={{ url_for('static', filename='newcrim.css') }}>
+    <link rel="stylesheet" href="{{ url_for('static', filename='newcrim.css') }}">
 </head>
 <body>
     <div class="container">
         <h1>Smart Policing System</h1>
-        <p>Enter the suspect's name and upload an Video for AI-based facial recognition.</p>
+        <p>Enter the suspect's name and upload a video for AI-based facial recognition.</p>
 
-        <form id="upload-form">
+        <form id="upload-form" action="/new-crim" method="post" enctype="multipart/form-data">
             <div class="input-box">
                 <label for="suspect-name">Suspect's Name</label>
-                <input type="text" id="suspect-name" placeholder="Enter full name" required>
+                <input type="text" name="name" id="suspect-name" placeholder="Enter full name" required>
             </div>
 
             <div class="upload-box">
-                <label for="image-upload">Upload Image</label>
-                <input type="file" id="image-upload" accept="image/*" required>
+                <label for="video-upload">Upload Video</label>
+                <input type="file" name="video" id="video-upload" accept="video/*" required>
             </div>
 
             <div id="file-preview"></div>
 
-            <button type="submit">Analyze Face</button>
+            <button type="submit">Analyze Faces</button>
         </form>
+
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                <div class="messages">
+                    {% for message in messages %}
+                        <p>{{ message }}</p>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
     </div>
 
     <script>
-        document.getElementById("image-upload").addEventListener("change", function(event) {
+        document.getElementById("video-upload").addEventListener("change", function(event) {
             let filePreview = document.getElementById("file-preview");
             filePreview.innerHTML = ""; // Clear previous preview
 
             if (event.target.files.length === 0) {
-                filePreview.innerHTML = "<p>No image selected.</p>";
+                filePreview.innerHTML = "<p>No video selected.</p>";
                 return;
             }
 
             let file = event.target.files[0];
-            if (file.type.startsWith("image/")) {
-                let imgPreview = document.createElement("img");
-                imgPreview.src = URL.createObjectURL(file);
-                imgPreview.alt = "Uploaded Image";
-                imgPreview.classList.add("preview-img");
-                filePreview.appendChild(imgPreview);
+            if (file.type.startsWith("video/")) {
+                let videoPreview = document.createElement("video");
+                videoPreview.src = URL.createObjectURL(file);
+                videoPreview.controls = true;
+                videoPreview.classList.add("preview-video");
+                filePreview.appendChild(videoPreview);
             } else {
-                filePreview.innerHTML = "<p style='color: red;'>Invalid file type. Please upload an image.</p>";
+                filePreview.innerHTML = "<p style='color: red;'>Invalid file type. Please upload a video.</p>";
             }
         });
 
         document.getElementById("upload-form").addEventListener("submit", function(event) {
-            event.preventDefault();
             let suspectName = document.getElementById("suspect-name").value.trim();
             if (!suspectName) {
                 alert("Please enter the suspect's name.");
-                return;
+                event.preventDefault();
             }
-            alert(`AI Facial Recognition for ${suspectName} in progress...`);
         });
     </script>
 </body>

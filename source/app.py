@@ -1,4 +1,4 @@
-from flask import Flask, render_template, Response
+from flask import Flask, render_template, Response, request, redirect, url_for, flash
 import cv2
 import os
 import numpy as np
@@ -8,6 +8,7 @@ import pickle
 from datetime import datetime
 
 app = Flask(__name__)
+app.secret_key = "your_secret_key"
 
 # Load Face Recognition Model
 embedder = FaceNet()
@@ -19,9 +20,13 @@ BASE_PATH = os.path.dirname(os.path.abspath(__file__))
 DETECTED_FACES_FOLDER = os.path.join(BASE_PATH, "detected_faces")
 TIME_DATA_FOLDER = os.path.join(BASE_PATH, "time_data")
 EMBEDDINGS_FILE = os.path.join(BASE_PATH, "embeddings.pkl")
+UPLOAD_FOLDER = os.path.join(BASE_PATH, "uploads")
+DATASET_FOLDER = os.path.join(BASE_PATH, "dataset")
 
 os.makedirs(DETECTED_FACES_FOLDER, exist_ok=True)
 os.makedirs(TIME_DATA_FOLDER, exist_ok=True)
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+os.makedirs(DATASET_FOLDER, exist_ok=True)
 
 # Load known faces embeddings
 with open(EMBEDDINGS_FILE, "rb") as f:
@@ -34,7 +39,6 @@ def extract_face(img):
     faces = []
 
     if results.detections:
-        print(f"Detected {len(results.detections)} face(s)")  # Debugging print
         for detection in results.detections:
             bboxC = detection.location_data.relative_bounding_box
             h, w, _ = img.shape
@@ -43,8 +47,6 @@ def extract_face(img):
             face = img_rgb[y:y + height, x:x + width]
             if face.shape[0] > 0 and face.shape[1] > 0:
                 faces.append((face, (x, y, width, height)))
-    else:
-        print("No face detected")  # Debugging print
     return faces
 
 # Function to recognize faces
@@ -56,12 +58,9 @@ def recognize_face(face_embedding):
     for person, embeddings in known_faces.items():
         for saved_embedding in embeddings:
             dist = np.linalg.norm(face_embedding - saved_embedding)
-            print(f"Comparing with {person}: Distance = {dist}")  # Debugging print
-            if dist < 0.7 and dist < min_dist:  # Adjusted threshold
+            if dist < 0.7 and dist < min_dist:
                 min_dist = dist
                 name = person
-
-    print(f"Recognized as: {name}")  # Debugging print
     return name
 
 # Video Streaming Generator
@@ -69,13 +68,11 @@ def generate_frames():
     cap = cv2.VideoCapture(0)
     
     if not cap.isOpened():
-        print("Error: Unable to access webcam.")  # Debugging print
         return
 
     while True:
         success, frame = cap.read()
         if not success:
-            print("Error: Failed to capture frame.")  # Debugging print
             break
         frame = cv2.flip(frame, 1)
 
@@ -90,13 +87,12 @@ def generate_frames():
             cv2.rectangle(frame, (x, y), (x + width, y + height), (0, 255, 0), 2)
             cv2.putText(frame, name, (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 255, 0), 2)
 
-            # **Save detected faces**
-            if name != "Unknown":  # Save only recognized faces
-                timestamp = datetime.now().strftime("%Y%m%d-%H%M%S")  # Unique timestamp
+            # Save detected faces
+            if name != "Unknown":
+                timestamp = datetime.now().strftime("%Y%m%d-%H%M%S")
                 face_filename = f"{name}_{timestamp}.jpg"
                 face_path = os.path.join(DETECTED_FACES_FOLDER, face_filename)
-                cv2.imwrite(face_path, cv2.cvtColor(face, cv2.COLOR_RGB2BGR))  # Convert back to BGR before saving
-                print(f"Saved detected face: {face_path}")  # Debugging print
+                cv2.imwrite(face_path, cv2.cvtColor(face, cv2.COLOR_RGB2BGR))
 
         # Encode Frame for Streaming
         ret, buffer = cv2.imencode('.jpg', frame)
@@ -107,6 +103,69 @@ def generate_frames():
 
     cap.release()
     cv2.destroyAllWindows()
+
+# Function to extract faces from video and store embeddings
+def extract_faces_from_video(name, video_path, num_images=100):
+    if not os.path.exists(video_path):
+        return "Error: Video file does not exist."
+
+    cap = cv2.VideoCapture(video_path)
+    if not cap.isOpened():
+        return "Error: Unable to open video file."
+
+    total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+    step = max(1, total_frames // num_images)
+
+    output_dir = os.path.join(DATASET_FOLDER, name)
+    os.makedirs(output_dir, exist_ok=True)
+
+    frame_count = 0
+    saved_images = 0
+    new_embeddings = []
+
+    while saved_images < num_images:
+        ret, frame = cap.read()
+        if not ret:
+            break
+
+        if frame_count % step != 0:
+            frame_count += 1
+            continue
+
+        frame_count += 1
+        faces = extract_face(frame)
+
+        for face, _ in faces:
+            face_resized = cv2.resize(face, (160, 160))
+            embedding = embedder.embeddings([face_resized])[0]
+            new_embeddings.append(embedding)
+
+            image_path = os.path.join(output_dir, f"face_{saved_images}.jpg")
+            cv2.imwrite(image_path, cv2.cvtColor(face_resized, cv2.COLOR_RGB2BGR))
+            saved_images += 1
+
+    cap.release()
+
+    # Save embeddings to embeddings.pkl
+    if new_embeddings:
+        if os.path.exists(EMBEDDINGS_FILE):
+            with open(EMBEDDINGS_FILE, "rb") as f:
+                known_faces = pickle.load(f)
+        else:
+            known_faces = {}
+
+        if name in known_faces:
+            known_faces[name].extend(new_embeddings)
+        else:
+            known_faces[name] = new_embeddings
+
+        with open(EMBEDDINGS_FILE, "wb") as f:
+            pickle.dump(known_faces, f)
+
+        return f"Extracted {len(new_embeddings)} face embeddings for {name} and saved in {EMBEDDINGS_FILE}."
+    
+    return "No faces detected in the video."
+
 
 @app.route('/')
 def login():
@@ -128,8 +187,20 @@ def video_feed():
 def contact():
     return render_template('contact.html')
 
-@app.route('/new-crim')
+@app.route('/new-crim', methods=['GET', 'POST'])
 def newcrim():
+    if request.method == 'POST':
+        name = request.form.get("name")
+        file = request.files["video"]
+
+        if file and name:
+            filepath = os.path.join(UPLOAD_FOLDER, file.filename)
+            file.save(filepath)
+
+            result = extract_faces_from_video(name, filepath)
+            flash(result)
+            return redirect(url_for('newcrim'))
+
     return render_template('newcrim.html')
 
 if __name__ == "__main__":

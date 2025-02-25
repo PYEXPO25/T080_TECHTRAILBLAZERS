@@ -6,6 +6,7 @@ import mediapipe as mp
 from keras_facenet import FaceNet
 import pickle
 from datetime import datetime
+import time
 
 app = Flask(__name__)
 app.secret_key = "your_secret_key"
@@ -65,9 +66,10 @@ def recognize_face(face_embedding):
 
 # Store alerts globally
 alerts = []
+last_detection_time = {}
 
 def generate_frames():
-    global alerts
+    global alerts, last_detection_time
     cap = cv2.VideoCapture(0)
 
     if not cap.isOpened():
@@ -90,12 +92,28 @@ def generate_frames():
             cv2.rectangle(frame, (x, y), (x + width, y + height), (0, 255, 0), 2)
             cv2.putText(frame, name, (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 255, 0), 2)
 
-            # Save detected faces & trigger alert
-            if name != "Unknown":
-                timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-                face_filename = f"{name}_{timestamp}.jpg"
-                face_path = os.path.join(DETECTED_FACES_FOLDER, face_filename)
+            # Get the current time
+            current_time = time.time()
+            
+            # Check if 10 seconds have passed since the last detection of this person
+            if name != "Unknown" and (name not in last_detection_time or current_time - last_detection_time[name] >= 10):
+                last_detection_time[name] = current_time  # Update last detection time
+
+                # Save detected face
+                person_folder = os.path.join(DETECTED_FACES_FOLDER, name)
+                os.makedirs(person_folder, exist_ok=True)
+
+                timestamp = datetime.now().strftime("%d-%m-%Y %H-%M-%S")
+                face_count = len(os.listdir(person_folder))
+                face_filename = f"img_{face_count + 1}.jpg"
+                face_path = os.path.join(person_folder, face_filename)
+
                 cv2.imwrite(face_path, cv2.cvtColor(face, cv2.COLOR_RGB2BGR))
+
+                # Save detected time
+                time_data_path = os.path.join(TIME_DATA_FOLDER, f"{name}.txt")
+                with open(time_data_path, "a") as f:
+                    f.write(f"{timestamp}\n")
 
                 # Store alert message
                 alerts.append({"name": name, "time": timestamp})

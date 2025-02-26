@@ -38,6 +38,7 @@ os.makedirs(DATASET_FOLDER, exist_ok=True)
 # Load known faces embeddings
 with open(EMBEDDINGS_FILE, "rb") as f:
     known_faces = pickle.load(f)
+print("Known Faces:", known_faces.keys())
 
 def extract_face(img):
     img_rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
@@ -71,7 +72,7 @@ def recognize_face(face_embedding):
 alerts = []
 last_detection_time = {}
 
-def extract_faces_from_video(name, video_path, num_images=50):
+def extract_faces_from_video(name, video_path, num_images=200):
     if not os.path.exists(video_path):
         return "Error: Video file does not exist."
 
@@ -146,46 +147,55 @@ def generate_frames():
             break
         frame = cv2.flip(frame, 1)
 
+        # 🔥 Reload embeddings in every frame to include new faces
+        if os.path.exists(EMBEDDINGS_FILE):
+            with open(EMBEDDINGS_FILE, "rb") as f:
+                known_faces = pickle.load(f)
+
         faces = extract_face(frame)
+        detected_names = set()
+
+        current_time = time.time()
+
         for face, (x, y, width, height) in faces:
             face_resized = cv2.resize(face, (160, 160))
             face_embedding = embedder.embeddings([face_resized])[0]
             name = recognize_face(face_embedding)
 
-            cv2.rectangle(frame, (x, y), (x + width, y + height), (0, 255, 0), 2)
-            cv2.putText(frame, name, (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 255, 0), 2)
+            if name not in detected_names:
+                detected_names.add(name)
 
-            current_time = time.time()
-            
-            if name != "Unknown" and (name not in last_detection_time or current_time - last_detection_time[name] >= 10):
-                last_detection_time[name] = current_time  
+                cv2.rectangle(frame, (x, y), (x + width, y + height), (0, 255, 0), 2)
+                cv2.putText(frame, name, (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 255, 0), 2)
 
-                person_folder = os.path.join(DETECTED_FACES_FOLDER, name)
-                os.makedirs(person_folder, exist_ok=True)
+                if name != "Unknown" and (name not in last_detection_time or current_time - last_detection_time[name] >= 10):
+                    last_detection_time[name] = current_time
 
-                timestamp = datetime.now().strftime("%d-%m-%Y %H-%M-%S")
-                face_count = len(os.listdir(person_folder))
-                face_filename = f"img_{face_count + 1}.jpg"
-                face_path = os.path.join(person_folder, face_filename)
+                    person_folder = os.path.join(DETECTED_FACES_FOLDER, name)
+                    os.makedirs(person_folder, exist_ok=True)
 
-                cv2.imwrite(face_path, cv2.cvtColor(face, cv2.COLOR_RGB2BGR))
+                    timestamp = datetime.now().strftime("%d-%m-%Y %H-%M-%S")
+                    face_count = len(os.listdir(person_folder))
+                    face_filename = f"img_{face_count + 1}.jpg"
+                    face_path = os.path.join(person_folder, face_filename)
 
-                time_data_path = os.path.join(TIME_DATA_FOLDER, f"{name}.txt")
-                with open(time_data_path, "a") as f:
-                    f.write(f"{timestamp}\n")
+                    cv2.imwrite(face_path, cv2.cvtColor(face, cv2.COLOR_RGB2BGR))
 
-                alerts.append({"name": name, "time": timestamp})
+                    time_data_path = os.path.join(TIME_DATA_FOLDER, f"{name}.txt")
+                    with open(time_data_path, "a") as f:
+                        f.write(f"{timestamp}\n")
 
-                # Store in MongoDB
-                with open(face_path, "rb") as img_file:
-                    image_data = img_file.read()
+                    alerts.append({"name": name, "time": timestamp})
 
-                suspect_data = {
-                    "suspect_name": name,
-                    "detected_image": image_data,
-                    "time": timestamp
-                }
-                collection.insert_one(suspect_data)
+                    with open(face_path, "rb") as img_file:
+                        image_data = img_file.read()
+
+                    suspect_data = {
+                        "suspect_name": name,
+                        "detected_image": image_data,
+                        "time": timestamp
+                    }
+                    collection.insert_one(suspect_data)
 
         ret, buffer = cv2.imencode('.jpg', frame)
         frame = buffer.tobytes()

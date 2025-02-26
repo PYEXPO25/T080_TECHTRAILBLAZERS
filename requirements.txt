@@ -9,3 +9,4 @@ torchvision==0.15.2
 tensorflow==2.13.0
 pillow==10.1.0
 pickle-mixin==1.0.2
+pymongo

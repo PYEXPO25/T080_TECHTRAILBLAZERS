@@ -135,9 +135,9 @@ Example pages:
 [Click here to view the PPT](https://docs.google.com/presentation/d/1v9qgMT0a9FUN5Xx9fwJWJzIDQSOeYU31/edit?usp=drive_link&ouid=110705910301356770694&rtpof=true&sd=true )
 
 ### 🎥 Project Video
-[Click here to view the project demo video](https://drive.google.com/file/d/1L6M7AJJfGKpYtC2iWQ1smh003NVLMnR2/view?usp=drive_link)
+[Click here to view the project demo video](https://drive.google.com/file/d/1ARDT_URYbDlK1UGKKu4m5_eCCWxR-xbi/view?usp=drive_link)
 
 ### 📹 YouTube Link
-[Watch the project on YouTube](https://drive.google.com/file/d/1L6M7AJJfGKpYtC2iWQ1smh003NVLMnR2/view?usp=drive_link)
+[Watch the project on YouTube](https://drive.google.com/file/d/1ARDT_URYbDlK1UGKKu4m5_eCCWxR-xbi/view?usp=drive_link)
 
 ---

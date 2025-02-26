@@ -31,7 +31,7 @@
                     </div>
 
                     <button type="submit" class="login-btn">
-                        Verify Credentials
+                        Submit
                     </button>
                 </form>
             </div>
@@ -56,31 +56,10 @@
             const officer = officerDatabase[badgeNumber];
 
             if (officer && officer.password === password) {
-                showProfile(officer);
+                window.location.href = "/landing";
             } else {
                 alert("Authentication failed. Please verify your credentials.");
             }
-        }
-
-        function showProfile(officer) {
-    document.getElementById('loginForm').style.display = 'none';
-    const profileContainer = document.getElementById('profileContainer');
-    profileContainer.style.display = 'block';
-
-    const badgeNumber = document.getElementById('badgeNumber').value; // Get the input value
-
-    profileContainer.innerHTML = `
-        <div class="profile-header">
-            <img src="${officer.photo}" alt="${officer.name}" class="profile-image" 
-                onerror="this.onerror=null; this.src='https://placehold.co/150x150?text=${officer.name.split(' ').map(n => n[0]).join('')}'">
-            <h2>${officer.name}</h2>
-            <p class="badge-number">${badgeNumber}</p> 
-            <p>${officer.rank}</p>
-        </div>
-        <a href="{{ url_for('landing') }}">
-            <button class="navigate-btn" onclick="window.location.href='landing.html'">Proceed to Dashboard</button>
-        </a>   
-        `;
 }
 
     </script>

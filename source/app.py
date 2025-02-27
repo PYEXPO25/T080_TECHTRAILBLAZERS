@@ -13,6 +13,7 @@ import smtplib
 import ssl
 import threading
 from queue import Queue
+from twilio.rest import Client
 
 task_queue = Queue()
 
@@ -23,6 +24,12 @@ app.secret_key = "your_secret_key"
 EMAIL_SENDER = 'mourishantonyc@gmail.com'
 EMAIL_PASSWORD = 'hmxn wppp myla mhkc'
 EMAIL_RECEIVER = 'rajmourishantony@gmail.com'
+
+# Twilio Configuration
+
+TWILIO_AUTH_TOKEN = '8b9019e92d1bb035b14bc9943d06a939'    
+TWILIO_PHONE_NUMBER = '+18596591506'      
+RECIPIENT_PHONE_NUMBER = '+916381032833' 
 
 # Connect to MongoDB
 client = MongoClient("mongodb://localhost:27017/")
@@ -50,6 +57,7 @@ os.makedirs(DATASET_FOLDER, exist_ok=True)
 # Load known faces embeddings
 with open(EMBEDDINGS_FILE, "rb") as f:
     known_faces = pickle.load(f)
+
 
 def extract_face(img):
     img_rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
@@ -144,9 +152,36 @@ def extract_faces_from_video(name, video_path, num_images=50):
     
     return "No faces detected in the video."
 
+def make_alert_call(name, timestamp):
+    """Make a phone call alert when a suspect is detected"""
+    try:
+        client = Client(TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN)
+        
+        # Create a TwiML response with text-to-speech
+        twiml = f"""
+        <Response>
+            <Say>Alert! Suspect {name} has been detected at {timestamp}. Please check your email for more details.</Say>
+            <Pause length="1"/>
+            <Say>Repeating: Suspect {name} has been detected.</Say>
+        </Response>
+        """
+        
+        # Make the call
+        call = client.calls.create(
+            twiml=twiml,
+            to=RECIPIENT_PHONE_NUMBER,
+            from_=TWILIO_PHONE_NUMBER
+        )
+        
+        print(f"Phone alert initiated for suspect: {name}, Call SID: {call.sid}")
+        return True
+    except Exception as e:
+        print(f"Error making phone call: {e}")
+        return False
+
 def send_email_alert(name, timestamp, face_path):
-    subject = f"Suspect Detected: {name}"
-    body = f"A suspect has been detected.\n\nName: {name}\nTime: {timestamp}"
+    subject = f"Suspect Detected  : {name}"
+    body = f"A suspect has been detected!!!!.\n\nName: {name}\nTime: {timestamp}"
 
     msg = EmailMessage()
     msg['From'] = EMAIL_SENDER
@@ -195,11 +230,15 @@ def process_alerts():
 
             # Send Email
             send_email_alert(name, timestamp, face_path)
+            
+            # Make phone call alert
+            make_alert_call(name, timestamp)
 
         except Exception as e:
             print(f"Error processing alert: {e}")
 
         task_queue.task_done()
+
 
 # Start the background thread
 alert_thread = threading.Thread(target=process_alerts, daemon=True)

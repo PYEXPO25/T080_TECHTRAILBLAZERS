@@ -8,9 +8,18 @@ import pickle
 from datetime import datetime
 import time
 from pymongo import MongoClient
+from email.message import EmailMessage
+import smtplib
+import ssl
+import base64
 
 app = Flask(__name__)
 app.secret_key = "your_secret_key"
+
+# Email Configuration
+EMAIL_SENDER = 'mourishantonyc@gmail.com'
+EMAIL_PASSWORD = 'hmxn wppp myla mhkc'
+EMAIL_RECEIVER = 'rajmourishantony@gmail.com'
 
 # Connect to MongoDB
 client = MongoClient("mongodb://localhost:27017/")
@@ -132,7 +141,35 @@ def extract_faces_from_video(name, video_path, num_images=50):
     
     return "No faces detected in the video."
 
+def send_email_alert(name, timestamp, face_path):
+    subject = f"Suspect Detected: {name}"
+    body = f"A suspect has been detected.\n\nName: {name}\nTime: {timestamp}"
 
+    msg = EmailMessage()
+    msg['From'] = EMAIL_SENDER
+    msg['To'] = EMAIL_RECEIVER
+    msg['Subject'] = subject
+    msg.set_content(body)
+
+    # Attach the detected face image
+    try:
+        with open(face_path, 'rb') as img:
+            img_data = img.read()
+            img_name = os.path.basename(face_path)
+            msg.add_attachment(img_data, maintype='image', subtype='jpeg', filename=img_name)
+    except Exception as e:
+        print(f"Error attaching image: {e}")
+
+    context = ssl.create_default_context()
+    try:
+        with smtplib.SMTP_SSL('smtp.gmail.com', 465, context=context) as smtp:
+            smtp.login(EMAIL_SENDER, EMAIL_PASSWORD)
+            smtp.sendmail(EMAIL_SENDER, EMAIL_RECEIVER, msg.as_string())
+            print(f"Email alert sent for suspect: {name}")
+    except Exception as e:
+        print(f"Email sending failed: {e}")
+
+# Update in generate_frames() to send email alerts
 def generate_frames():
     global alerts, last_detection_time
     cap = cv2.VideoCapture(0)
@@ -146,6 +183,11 @@ def generate_frames():
             break
         frame = cv2.flip(frame, 1)
 
+        # Reload known faces dynamically
+        if os.path.exists(EMBEDDINGS_FILE):
+            with open(EMBEDDINGS_FILE, "rb") as f:
+                known_faces = pickle.load(f)
+
         faces = extract_face(frame)
         for face, (x, y, width, height) in faces:
             face_resized = cv2.resize(face, (160, 160))
@@ -156,7 +198,7 @@ def generate_frames():
             cv2.putText(frame, name, (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 255, 0), 2)
 
             current_time = time.time()
-            
+
             if name != "Unknown" and (name not in last_detection_time or current_time - last_detection_time[name] >= 10):
                 last_detection_time[name] = current_time  
 
@@ -186,6 +228,8 @@ def generate_frames():
                     "time": timestamp
                 }
                 collection.insert_one(suspect_data)
+                 # **Call the send_email_alert function**
+                send_email_alert(name, timestamp, face_path)
 
         ret, buffer = cv2.imencode('.jpg', frame)
         frame = buffer.tobytes()
@@ -195,6 +239,7 @@ def generate_frames():
 
     cap.release()
     cv2.destroyAllWindows()
+
 
 @app.route('/get_alerts')
 def get_alerts():

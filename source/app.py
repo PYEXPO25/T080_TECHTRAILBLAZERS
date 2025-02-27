@@ -11,7 +11,10 @@ from pymongo import MongoClient
 from email.message import EmailMessage
 import smtplib
 import ssl
-import base64
+import threading
+from queue import Queue
+
+task_queue = Queue()
 
 app = Flask(__name__)
 app.secret_key = "your_secret_key"
@@ -170,6 +173,38 @@ def send_email_alert(name, timestamp, face_path):
         print(f"Email sending failed: {e}")
 
 # Update in generate_frames() to send email alerts
+def process_alerts():
+    """Thread to process suspect alerts asynchronously"""
+    while True:
+        task = task_queue.get()
+        if task is None:
+            break  # Stop the thread when None is added to the queue
+
+        name, timestamp, face_path = task
+        try:
+            # Save suspect in MongoDB
+            with open(face_path, "rb") as img_file:
+                image_data = img_file.read()
+
+            suspect_data = {
+                "suspect_name": name,
+                "detected_image": image_data,
+                "time": timestamp
+            }
+            collection.insert_one(suspect_data)
+
+            # Send Email
+            send_email_alert(name, timestamp, face_path)
+
+        except Exception as e:
+            print(f"Error processing alert: {e}")
+
+        task_queue.task_done()
+
+# Start the background thread
+alert_thread = threading.Thread(target=process_alerts, daemon=True)
+alert_thread.start()
+
 def generate_frames():
     global alerts, last_detection_time
     cap = cv2.VideoCapture(0)
@@ -218,18 +253,8 @@ def generate_frames():
 
                 alerts.append({"name": name, "time": timestamp})
 
-                # Store in MongoDB
-                with open(face_path, "rb") as img_file:
-                    image_data = img_file.read()
-
-                suspect_data = {
-                    "suspect_name": name,
-                    "detected_image": image_data,
-                    "time": timestamp
-                }
-                collection.insert_one(suspect_data)
-                 # **Call the send_email_alert function**
-                send_email_alert(name, timestamp, face_path)
+                # Add task to the queue instead of blocking frame processing
+                task_queue.put((name, timestamp, face_path))
 
         ret, buffer = cv2.imencode('.jpg', frame)
         frame = buffer.tobytes()
@@ -239,7 +264,6 @@ def generate_frames():
 
     cap.release()
     cv2.destroyAllWindows()
-
 
 @app.route('/get_alerts')
 def get_alerts():

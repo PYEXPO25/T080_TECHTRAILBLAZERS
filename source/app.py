@@ -285,6 +285,8 @@ def landing():
 
 @app.route('/live-mon')
 def live_mon():
+    global alerts
+    alerts = []  # Clear previous alerts
     return render_template("livemon.html")
 
 @app.route('/video_feed')

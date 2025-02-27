@@ -5,7 +5,9 @@
 ## Problem Statement
 
 Problem Statement ID – PY036
+Problem Statement ID – PY036
 
+An intent to expediate the investigation for any crime scene or to take preventive action to neutralize an intended antisocial activity (information received through intel), we wish to implement an extended application of Facial Recognition System(FRS).Real Time validation of individuals with crime history,Movement Tracking of Suspects,Identification of People loitering in Unauthorized area,Smart Police Deployment.  
 An intent to expediate the investigation for any crime scene or to take preventive action to neutralize an intended antisocial activity (information received through intel), we wish to implement an extended application of Facial Recognition System(FRS).Real Time validation of individuals with crime history,Movement Tracking of Suspects,Identification of People loitering in Unauthorized area,Smart Police Deployment.  
 ---
 
@@ -33,6 +35,8 @@ This system automates decision making using facial recognition.It enhances the e
 
 Team ID – T080
  
+Team ID – T080
+ 
 List your team members along with their roles.
 
 - Mourish Antony C - AI&ML Model Developer
@@ -49,6 +53,10 @@ List your team members along with their roles.
 
 List the technologies and tools used in the project. For example:
 
+- Frontend: HTML, CSS, JavaScript,
+- Backend: Flask
+- Database: MySQL
+- Other Tools:  Git,TensorFlow,open CV,mediapip
 - Frontend: HTML, CSS, JavaScript,
 - Backend: Flask
 - Database: MySQL
@@ -117,13 +125,17 @@ Follow these steps to clone and run the application locally.
 Images to demonstrate the user interface:
 
 Example pages:
+Example pages:
 
+1. Landing Page:
 1. Landing Page:
    ![Landing Page Mockup](media/LoadingPage.png)
 
 2. Dashboard:
+2. Dashboard:
    ![Dashboard Mockup](media/DashBoard.png)
 
+3. Analytics View:
 3. Analytics View:
    ![Analytics Mockup](media/Analytics.png)
 

@@ -59,7 +59,7 @@ def extract_face(img):
             h, w, _ = img.shape
             x, y, width, height = (int(bboxC.xmin * w), int(bboxC.ymin * h), 
                                    int(bboxC.width * w), int(bboxC.height * h))
-            face = img_rgb[y:y + height, x:x + width]
+            face = img[y:y + height, x:x + width]  
             if face.shape[0] > 0 and face.shape[1] > 0:
                 faces.append((face, (x, y, width, height)))
     return faces

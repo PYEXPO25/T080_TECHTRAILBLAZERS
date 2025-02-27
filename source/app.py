@@ -8,17 +8,9 @@ import pickle
 from datetime import datetime
 import time
 from pymongo import MongoClient
-from email.message import EmailMessage
-import smtplib
-import ssl
 
 app = Flask(__name__)
 app.secret_key = "your_secret_key"
-
-# Email Configuration
-EMAIL_SENDER = 'mourishantonyc@gmail.com'
-EMAIL_PASSWORD = 'hmxn wppp myla mhkc'
-EMAIL_RECEIVER = 'rajmourishantony@gmail.com'
 
 # Connect to MongoDB
 client = MongoClient("mongodb://localhost:27017/")
@@ -46,7 +38,6 @@ os.makedirs(DATASET_FOLDER, exist_ok=True)
 # Load known faces embeddings
 with open(EMBEDDINGS_FILE, "rb") as f:
     known_faces = pickle.load(f)
-print("Known Faces:", known_faces.keys())
 
 def extract_face(img):
     img_rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
@@ -59,7 +50,7 @@ def extract_face(img):
             h, w, _ = img.shape
             x, y, width, height = (int(bboxC.xmin * w), int(bboxC.ymin * h), 
                                    int(bboxC.width * w), int(bboxC.height * h))
-            face = img[y:y + height, x:x + width]  
+            face = img_rgb[y:y + height, x:x + width]
             if face.shape[0] > 0 and face.shape[1] > 0:
                 faces.append((face, (x, y, width, height)))
     return faces
@@ -77,31 +68,70 @@ def recognize_face(face_embedding):
                 name = person
     return name
 
-def send_email(suspect_name, suspect_time, suspect_image_path):
-    subject = "Suspect Detected Alert"
-    body = f"Suspect Name: {suspect_name}\nDetection Time: {suspect_time}\n\nThe suspect's image is attached."
-
-    msg = EmailMessage()
-    msg['From'] = EMAIL_SENDER
-    msg['To'] = EMAIL_RECEIVER
-    msg['Subject'] = subject
-    msg.set_content(body)
-
-    with open(suspect_image_path, 'rb') as img_file:
-        img_data = img_file.read()
-        msg.add_attachment(img_data, maintype='image', subtype='jpeg', filename="suspect.jpg")
-
-    context = ssl.create_default_context()
-    try:
-        with smtplib.SMTP_SSL('smtp.gmail.com', 465, context=context) as smtp:
-            smtp.login(EMAIL_SENDER, EMAIL_PASSWORD)
-            smtp.sendmail(EMAIL_SENDER, EMAIL_RECEIVER, msg.as_string())
-        print("Email sent successfully")
-    except Exception as e:
-        print(f"Error sending email: {e}")
-
 alerts = []
 last_detection_time = {}
+
+def extract_faces_from_video(name, video_path, num_images=50):
+    if not os.path.exists(video_path):
+        return "Error: Video file does not exist."
+
+    cap = cv2.VideoCapture(video_path)
+    if not cap.isOpened():
+        return "Error: Unable to open video file."
+
+    total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+    step = max(1, total_frames // num_images)
+
+    output_dir = os.path.join(DATASET_FOLDER, name)
+    os.makedirs(output_dir, exist_ok=True)
+
+    frame_count = 0
+    saved_images = 0
+    new_embeddings = []
+
+    while saved_images < num_images:
+        ret, frame = cap.read()
+        if not ret:
+            break
+
+        if frame_count % step != 0:
+            frame_count += 1
+            continue
+
+        frame_count += 1
+        faces = extract_face(frame)
+
+        for face, _ in faces:
+            face_resized = cv2.resize(face, (160, 160))
+            embedding = embedder.embeddings([face_resized])[0]
+            new_embeddings.append(embedding)
+
+            image_path = os.path.join(output_dir, f"face_{saved_images}.jpg")
+            cv2.imwrite(image_path, cv2.cvtColor(face_resized, cv2.COLOR_RGB2BGR))
+            saved_images += 1
+
+    cap.release()
+
+    # Save embeddings to embeddings.pkl
+    if new_embeddings:
+        if os.path.exists(EMBEDDINGS_FILE):
+            with open(EMBEDDINGS_FILE, "rb") as f:
+                known_faces = pickle.load(f)
+        else:
+            known_faces = {}
+
+        if name in known_faces:
+            known_faces[name].extend(new_embeddings)
+        else:
+            known_faces[name] = new_embeddings
+
+        with open(EMBEDDINGS_FILE, "wb") as f:
+            pickle.dump(known_faces, f)
+
+        return f"Extracted {len(new_embeddings)} face embeddings for {name} and saved in {EMBEDDINGS_FILE}."
+    
+    return "No faces detected in the video."
+
 
 def generate_frames():
     global alerts, last_detection_time
@@ -116,56 +146,46 @@ def generate_frames():
             break
         frame = cv2.flip(frame, 1)
 
-        if os.path.exists(EMBEDDINGS_FILE):
-            with open(EMBEDDINGS_FILE, "rb") as f:
-                known_faces = pickle.load(f)
-
         faces = extract_face(frame)
-        detected_names = set()
-        current_time = time.time()
-
         for face, (x, y, width, height) in faces:
             face_resized = cv2.resize(face, (160, 160))
             face_embedding = embedder.embeddings([face_resized])[0]
             name = recognize_face(face_embedding)
 
-            if name not in detected_names:
-                detected_names.add(name)
+            cv2.rectangle(frame, (x, y), (x + width, y + height), (0, 255, 0), 2)
+            cv2.putText(frame, name, (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 255, 0), 2)
 
-                cv2.rectangle(frame, (x, y), (x + width, y + height), (0, 255, 0), 2)
-                cv2.putText(frame, name, (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 255, 0), 2)
+            current_time = time.time()
+            
+            if name != "Unknown" and (name not in last_detection_time or current_time - last_detection_time[name] >= 10):
+                last_detection_time[name] = current_time  
 
-                if name != "Unknown" and (name not in last_detection_time or current_time - last_detection_time[name] >= 10):
-                    last_detection_time[name] = current_time
+                person_folder = os.path.join(DETECTED_FACES_FOLDER, name)
+                os.makedirs(person_folder, exist_ok=True)
 
-                    person_folder = os.path.join(DETECTED_FACES_FOLDER, name)
-                    os.makedirs(person_folder, exist_ok=True)
+                timestamp = datetime.now().strftime("%d-%m-%Y %H-%M-%S")
+                face_count = len(os.listdir(person_folder))
+                face_filename = f"img_{face_count + 1}.jpg"
+                face_path = os.path.join(person_folder, face_filename)
 
-                    timestamp = datetime.now().strftime("%d-%m-%Y %H-%M-%S")
-                    face_count = len(os.listdir(person_folder))
-                    face_filename = f"img_{face_count + 1}.jpg"
-                    face_path = os.path.join(person_folder, face_filename)
+                cv2.imwrite(face_path, cv2.cvtColor(face, cv2.COLOR_RGB2BGR))
 
-                    cv2.imwrite(face_path, cv2.cvtColor(face, cv2.COLOR_RGB2BGR))
+                time_data_path = os.path.join(TIME_DATA_FOLDER, f"{name}.txt")
+                with open(time_data_path, "a") as f:
+                    f.write(f"{timestamp}\n")
 
-                    time_data_path = os.path.join(TIME_DATA_FOLDER, f"{name}.txt")
-                    with open(time_data_path, "a") as f:
-                        f.write(f"{timestamp}\n")
+                alerts.append({"name": name, "time": timestamp})
 
-                    alerts.append({"name": name, "time": timestamp})
+                # Store in MongoDB
+                with open(face_path, "rb") as img_file:
+                    image_data = img_file.read()
 
-                    with open(face_path, "rb") as img_file:
-                        image_data = img_file.read()
-
-                    suspect_data = {
-                        "suspect_name": name,
-                        "detected_image": image_data,
-                        "time": timestamp
-                    }
-                    collection.insert_one(suspect_data)
-
-                    # Send Email Notification
-                    send_email(name, timestamp, face_path)
+                suspect_data = {
+                    "suspect_name": name,
+                    "detected_image": image_data,
+                    "time": timestamp
+                }
+                collection.insert_one(suspect_data)
 
         ret, buffer = cv2.imencode('.jpg', frame)
         frame = buffer.tobytes()
@@ -205,6 +225,22 @@ def video_feed():
 @app.route('/contact')
 def contact():
     return render_template('contact.html')
+
+@app.route('/new-crim', methods=['GET', 'POST'])
+def newcrim():
+    if request.method == 'POST':
+        name = request.form.get("name")
+        file = request.files["video"]
+
+        if file and name:
+            filepath = os.path.join(UPLOAD_FOLDER, file.filename)
+            file.save(filepath)
+
+            result = extract_faces_from_video(name, filepath)
+            flash(result)
+            return redirect(url_for('newcrim'))
+
+    return render_template('newcrim.html')
 
 if __name__ == "__main__":
     app.run(debug=True)

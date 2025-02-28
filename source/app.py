@@ -26,7 +26,7 @@ EMAIL_PASSWORD = 'hmxn wppp myla mhkc'
 EMAIL_RECEIVER = 'rajmourishantony@gmail.com'
 
 # Twilio Configuration
-
+TWILIO_ACCOUNT_SID = 'ACb12d8abd2288f3d831aa9003bc7ff69e'
 TWILIO_AUTH_TOKEN = '8b9019e92d1bb035b14bc9943d06a939'    
 TWILIO_PHONE_NUMBER = '+18596591506'      
 RECIPIENT_PHONE_NUMBER = '+916381032833' 
@@ -83,7 +83,7 @@ def recognize_face(face_embedding):
     for person, embeddings in known_faces.items():
         for saved_embedding in embeddings:
             dist = np.linalg.norm(face_embedding - saved_embedding)
-            if dist < 0.7 and dist < min_dist:
+            if dist < 0.6 and dist < min_dist:
                 min_dist = dist
                 name = person
     return name
@@ -239,7 +239,6 @@ def process_alerts():
 
         task_queue.task_done()
 
-
 # Start the background thread
 alert_thread = threading.Thread(target=process_alerts, daemon=True)
 alert_thread.start()
@@ -311,8 +310,17 @@ def get_alerts():
 
 @app.route('/suspects')
 def get_suspects():
-    suspects = list(collection.find({}, {"_id": 0, "suspect_name": 1, "time": 1}))
-    return jsonify(suspects)
+    # Find all suspects in the database
+    suspects = list(collection.find({}))
+    # Convert the ObjectId to string for each document
+    for suspect in suspects:
+        suspect['_id'] = str(suspect['_id'])
+        # Convert binary image data to base64 for display in HTML
+        if 'detected_image' in suspect:
+            import base64
+            suspect['image_b64'] = base64.b64encode(suspect['detected_image']).decode('utf-8')
+    
+    return render_template('suspects.html', suspects=suspects)
 
 @app.route('/')
 def login():

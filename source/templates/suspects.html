@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Detected Suspects</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.1.3/css/bootstrap.min.css">
+    <style>
+        .suspect-image {
+            width: 150px;
+            height: 150px;
+            object-fit: cover;
+            border-radius: 5px;
+        }
+        .table-container {
+            margin-top: 20px;
+        }
+        .page-title {
+            margin: 20px 0;
+            color: #343a40;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="page-title text-center">Detected Suspects Database</h1>
+        
+        <div class="table-container">
+            <table class="table table-striped table-bordered">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Suspect Name</th>
+                        <th>Detection Time</th>
+                        <th>Image</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for suspect in suspects %}
+                    <tr>
+                        <td>{{ suspect.suspect_name }}</td>
+                        <td>{{ suspect.time }}</td>
+                        <td>
+                            {% if suspect.image_b64 %}
+                            <img src="data:image/jpeg;base64,{{ suspect.image_b64 }}" class="suspect-image" alt="{{ suspect.suspect_name }}">
+                            {% else %}
+                            <span>No image available</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        
+        <div class="text-center mt-4">
+            <a href="/landing" class="btn btn-primary">Back to Dashboard</a>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.1.3/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

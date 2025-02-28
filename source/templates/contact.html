@@ -224,22 +224,51 @@
     </footer>
 
     <script>
-        // Mobile menu toggle
-        document.querySelector('.hamburger').addEventListener('click', function() {
-            document.querySelector('.nav-links').classList.toggle('active');
-            this.classList.toggle('active');
-        });
-
-        // Contact button functionality
-        const contactButtons = document.querySelectorAll('.contact-btn');
-        contactButtons.forEach(button => {
-            button.addEventListener('click', function() {
-                const cardBack = this.closest('.team-card-back');
-                const name = cardBack.querySelector('h3').textContent;
-                
-                document.getElementById('subject').value = Contacting Officer ${name};
-                document.querySelector('.contact-form-section').scrollIntoView({ behavior: 'smooth' });
+                // Add this to the existing script section at the bottom of your HTML file
+        document.querySelector('.contact-form').addEventListener('submit', function(event) {
+            event.preventDefault(); // Prevent default form submission
+            
+            // Get form values
+            const name = document.getElementById('name').value;
+            const email = document.getElementById('email').value;
+            const subject = document.getElementById('subject').value;
+            const message = document.getElementById('message').value;
+            
+            // Log the email (for testing)
+            console.log("Captured email:", email);
+            
+            // Here you would typically send this data to your server
+            // For example using fetch or XMLHttpRequest
+            
+            // Example of how you might send this data:
+            
+            fetch('/submit-contact', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    name: name,
+                    email: email,
+                    subject: subject,
+                    message: message
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('Success:', data);
+                alert('Thank you for your message. We will contact you soon!');
+                this.reset(); // Reset the form
+            })
+            .catch((error) => {
+                console.error('Error:', error);
+                alert('There was an error submitting your message. Please try again.');
             });
+            
+            
+            // For now, just show an alert
+            alert(`Thank you for your message, ${name}! We'll contact you at ${email} soon.`);
+            this.reset(); // Reset the form
         });
     </script>
 </body>

@@ -83,7 +83,7 @@ def recognize_face(face_embedding):
     for person, embeddings in known_faces.items():
         for saved_embedding in embeddings:
             dist = np.linalg.norm(face_embedding - saved_embedding)
-            if dist < 0.6 and dist < min_dist:
+            if dist < 0.7 and dist < min_dist:
                 min_dist = dist
                 name = person
     return name
@@ -243,6 +243,7 @@ def process_alerts():
 alert_thread = threading.Thread(target=process_alerts, daemon=True)
 alert_thread.start()
 
+
 def generate_frames():
     global alerts, last_detection_time
     cap = cv2.VideoCapture(0)
@@ -258,8 +259,8 @@ def generate_frames():
 
         # Reload known faces dynamically
         if os.path.exists(EMBEDDINGS_FILE):
-            with open(EMBEDDINGS_FILE, "rb") as f:
-                known_faces = pickle.load(f)
+         with open(EMBEDDINGS_FILE, "rb") as f:
+            known_faces = pickle.load(f)
 
         faces = extract_face(frame)
         for face, (x, y, width, height) in faces:

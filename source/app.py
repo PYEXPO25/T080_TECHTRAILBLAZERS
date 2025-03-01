@@ -26,6 +26,7 @@ EMAIL_PASSWORD = 'hmxn wppp myla mhkc'
 EMAIL_RECEIVER = 'rajmourishantony@gmail.com'
 
 # Twilio Configuration
+TWILIO_ACCOUNT_SID = 'ACb12d8abd2288f3d831aa9003bc7ff69e'
 TWILIO_AUTH_TOKEN = '8b9019e92d1bb035b14bc9943d06a939'    
 TWILIO_PHONE_NUMBER = '+18596591506'      
 RECIPIENT_PHONE_NUMBER = '+916381032833' 

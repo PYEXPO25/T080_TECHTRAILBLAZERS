@@ -147,16 +147,16 @@ h1, h2, h3 {
     box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
 }
 
-.search-input, .datepicker {
+.input-group .form-control {
     border: 1px solid #e2e8f0;
     border-radius: 5px;
     padding: 0.7rem;
     font-size: 1rem;
-    width: 100%;
     transition: var(--transition);
+    padding-left: 35px;
 }
 
-.search-input:focus, .datepicker:focus {
+.input-group .form-control:focus {
     border-color: var(--accent-color);
     box-shadow: 0 0 0 3px rgba(33, 150, 243, 0.2);
     outline: none;
@@ -175,8 +175,23 @@ h1, h2, h3 {
     z-index: 10;
 }
 
-.input-group .form-control {
-    padding-left: 35px;
+/* Datepicker specific styles */
+.datepicker-dropdown {
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    border: 1px solid #e2e8f0;
+    padding: 10px;
+    z-index: 1060 !important;
+}
+
+.datepicker table tr td.active.active, 
+.datepicker table tr td.active:hover.active {
+    background-color: var(--primary-color);
+    background-image: none;
+}
+
+.datepicker table tr td.today {
+    background-color: #FFF9C4;
+    background-image: none;
 }
 
 /* Buttons */

@@ -91,7 +91,7 @@ def recognize_face(face_embedding):
 alerts = []
 last_detection_time = {}
 
-def extract_faces_from_video(name, video_path, num_images=50):
+def extract_faces_from_video(name, video_path, num_images=100):
     if not os.path.exists(video_path):
         return "Error: Video file does not exist."
 

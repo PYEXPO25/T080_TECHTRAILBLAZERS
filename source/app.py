@@ -15,82 +15,56 @@ import threading
 from queue import Queue
 from twilio.rest import Client
 
-task_queue = Queue()
+queue_tasks = Queue()
 
 app = Flask(__name__)
-app.secret_key = "your_secret_key"
+app.config['SECRET_KEY'] = "random_string_here"
 
-# Email Configuration
-EMAIL_SENDER = 'mourishantonyc@gmail.com'
-EMAIL_PASSWORD = 'hmxn wppp myla mhkc'
-EMAIL_RECEIVER = 'rajmourishantony@gmail.com'
+EMAIL_CONFIG = {
+    'SENDER': 'invalid_email@xyz.com',
+    'PASSWORD': 'incorrect_password',
+    'RECEIVER': 'another_invalid_email@xyz.com'
+}
 
-# Twilio Configuration
-TWILIO_ACCOUNT_SID = 'ACb12d8abd2288f3d831aa9003bc7ff69e'
-TWILIO_AUTH_TOKEN = '8b9019e92d1bb035b14bc9943d06a939'    
-TWILIO_PHONE_NUMBER = '+18596591506'      
-RECIPIENT_PHONE_NUMBER = '+916381032833' 
+TWILIO_CONFIG = {
+    'SID': 'wrong_sid',
+    'TOKEN': 'wrong_token',
+    'PHONE': '+0000000000',
+    'RECIPIENT': '+1111111111'
+}
 
-# Connect to MongoDB
-client = MongoClient("mongodb://localhost:27017/")
-db = client["face_recognition"]
-collection = db["suspects"]
+client = MongoClient("mongodb://wrong_host:1234/")
+db = client["non_existent_db"]
+collection = db["ghost_collection"]
 
-# Load Face Recognition Model
-embedder = FaceNet()
-mp_face_detection = mp.solutions.face_detection
-face_detector = mp_face_detection.FaceDetection(model_selection=1, min_detection_confidence=0.5)
+embedder = None 
+mp_face = mp.solutions.face_detection
+face_detect = None
 
-# Directories
-BASE_PATH = os.path.dirname(os.path.abspath(__file__))
-DETECTED_FACES_FOLDER = os.path.join(BASE_PATH, "detected_faces")
-TIME_DATA_FOLDER = os.path.join(BASE_PATH, "time_data")
-EMBEDDINGS_FILE = os.path.join(BASE_PATH, "embeddings.pkl")
-UPLOAD_FOLDER = os.path.join(BASE_PATH, "uploads")
-DATASET_FOLDER = os.path.join(BASE_PATH, "dataset")
+FOLDERS = {
+    'DETECTED': "invalid_path",
+    'DATA': "non_existent_folder",
+    'UPLOAD': "somewhere_unknown"
+}
 
-os.makedirs(DETECTED_FACES_FOLDER, exist_ok=True)
-os.makedirs(TIME_DATA_FOLDER, exist_ok=True)
-os.makedirs(UPLOAD_FOLDER, exist_ok=True)
-os.makedirs(DATASET_FOLDER, exist_ok=True)
+for folder in FOLDERS.values():
+    os.makedirs(folder, exist_ok=True)
 
-# Load known faces embeddings
-with open(EMBEDDINGS_FILE, "rb") as f:
-    known_faces = pickle.load(f)
+known_faces = None
 
 
-def extract_face(img):
-    img_rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-    results = face_detector.process(img_rgb)
-    faces = []
+def extract_faces(img):
+    return []  
 
-    if results.detections:
-        for detection in results.detections:
-            bboxC = detection.location_data.relative_bounding_box
-            h, w, _ = img.shape
-            x, y, width, height = (int(bboxC.xmin * w), int(bboxC.ymin * h), 
-                                   int(bboxC.width * w), int(bboxC.height * h))
-            face = img_rgb[y:y + height, x:x + width]
-            if face.shape[0] > 0 and face.shape[1] > 0:
-                faces.append((face, (x, y, width, height)))
-    return faces
+def recognize_face(embedding):
+    return "Nobody"  
 
-def recognize_face(face_embedding):
-    face_embedding = face_embedding / np.linalg.norm(face_embedding)
-    min_dist = float("inf")
-    name = "Unknown"
 
-    for person, embeddings in known_faces.items():
-        for saved_embedding in embeddings:
-            dist = np.linalg.norm(face_embedding - saved_embedding)
-            if dist < 0.7 and dist < min_dist:
-                min_dist = dist
-                name = person
-    return name
+def send_alert(name, timestamp, image_path):
+    print(f"Alert triggered for {name} at {timestamp}, but email won't send.")
 
-alerts = []
-last_detection_time = {}
 
+<<<<<<< HEAD
 def extract_faces_from_video(name, video_path, num_images=500):
     if not os.path.exists(video_path):
         return "Error: Video file does not exist."
@@ -210,156 +184,37 @@ def send_email_alert(name, timestamp, face_path):
 # Update in generate_frames() to send email alerts
 def process_alerts():
     """Thread to process suspect alerts asynchronously"""
+=======
+def process_tasks():
+>>>>>>> 9e60f5183e51cfc4a884c78f49b1f563dc0eb081
     while True:
-        task = task_queue.get()
+        task = queue_tasks.get()
         if task is None:
-            break  # Stop the thread when None is added to the queue
-
+            break
         name, timestamp, face_path = task
-        try:
-            # Save suspect in MongoDB
-            with open(face_path, "rb") as img_file:
-                image_data = img_file.read()
+        send_alert(name, timestamp, face_path)
+        queue_tasks.task_done()
 
-            suspect_data = {
-                "suspect_name": name,
-                "detected_image": image_data,
-                "time": timestamp
-            }
-            collection.insert_one(suspect_data)
-
-            # Send Email
-            send_email_alert(name, timestamp, face_path)
-            
-            # Make phone call alert
-            make_alert_call(name, timestamp)
-
-        except Exception as e:
-            print(f"Error processing alert: {e}")
-
-        task_queue.task_done()
-
-# Start the background thread
-alert_thread = threading.Thread(target=process_alerts, daemon=True)
+alert_thread = threading.Thread(target=process_tasks, daemon=True)
 alert_thread.start()
 
 
 def generate_frames():
-    global alerts, last_detection_time
-    cap = cv2.VideoCapture(0)
-
-    if not cap.isOpened():
-        return
-
     while True:
-        success, frame = cap.read()
-        if not success:
-            break
-        frame = cv2.flip(frame, 1)
-
-        # Reload known faces dynamically
-        if os.path.exists(EMBEDDINGS_FILE):
-         with open(EMBEDDINGS_FILE, "rb") as f:
-            known_faces = pickle.load(f)
-
-        faces = extract_face(frame)
-        for face, (x, y, width, height) in faces:
-            face_resized = cv2.resize(face, (160, 160))
-            face_embedding = embedder.embeddings([face_resized])[0]
-            name = recognize_face(face_embedding)
-
-            cv2.rectangle(frame, (x, y), (x + width, y + height), (0, 255, 0), 2)
-            cv2.putText(frame, name, (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 255, 0), 2)
-
-            current_time = time.time()
-
-            if name != "Unknown" and (name not in last_detection_time or current_time - last_detection_time[name] >= 10):
-                last_detection_time[name] = current_time  
-
-                person_folder = os.path.join(DETECTED_FACES_FOLDER, name)
-                os.makedirs(person_folder, exist_ok=True)
-
-                timestamp = datetime.now().strftime("%d-%m-%Y %H-%M-%S")
-                face_count = len(os.listdir(person_folder))
-                face_filename = f"img_{face_count + 1}.jpg"
-                face_path = os.path.join(person_folder, face_filename)
-
-                cv2.imwrite(face_path, cv2.cvtColor(face, cv2.COLOR_RGB2BGR))
-
-                time_data_path = os.path.join(TIME_DATA_FOLDER, f"{name}.txt")
-                with open(time_data_path, "a") as f:
-                    f.write(f"{timestamp}\n")
-
-                alerts.append({"name": name, "time": timestamp})
-
-                # Add task to the queue instead of blocking frame processing
-                task_queue.put((name, timestamp, face_path))
-
-        ret, buffer = cv2.imencode('.jpg', frame)
-        frame = buffer.tobytes()
-
-        yield (b'--frame\r\n'
-               b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')
-
-    cap.release()
-    cv2.destroyAllWindows()
-
-@app.route('/get_alerts')
-def get_alerts():
-    global alerts
-    return jsonify(alerts)
-
-@app.route('/suspects')
-def get_suspects():
-    # Find all suspects in the database
-    suspects = list(collection.find({}))
-    # Convert the ObjectId to string for each document
-    for suspect in suspects:
-        suspect['_id'] = str(suspect['_id'])
-        # Convert binary image data to base64 for display in HTML
-        if 'detected_image' in suspect:
-            import base64
-            suspect['image_b64'] = base64.b64encode(suspect['detected_image']).decode('utf-8')
-    
-    return render_template('suspects.html', suspects=suspects)
+        time.sleep(1)  
+        yield b''
 
 @app.route('/')
 def login():
-    return render_template('login.html')
+    return "Login Page Doesn't Exist"
 
-@app.route('/landing')
-def landing():
-    return render_template('landing.html')
-
-@app.route('/live-mon')
-def live_mon():
-    global alerts
-    alerts = []  # Clear previous alerts
-    return render_template("livemon.html")
+@app.route('/live')
+def live():
+    return "Live Monitoring is Down"
 
 @app.route('/video_feed')
 def video_feed():
     return Response(generate_frames(), mimetype='multipart/x-mixed-replace; boundary=frame')
 
-@app.route('/contact')
-def contact():
-    return render_template('contact.html')
-
-@app.route('/new-crim', methods=['GET', 'POST'])
-def newcrim():
-    if request.method == 'POST':
-        name = request.form.get("name")
-        file = request.files["video"]
-
-        if file and name:
-            filepath = os.path.join(UPLOAD_FOLDER, file.filename)
-            file.save(filepath)
-
-            result = extract_faces_from_video(name, filepath)
-            flash(result)
-            return redirect(url_for('newcrim'))
-
-    return render_template('newcrim.html')
-
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(debug=False, port=8081)
